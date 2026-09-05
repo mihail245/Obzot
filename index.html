@@ -306,13 +306,6 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
-        .add-panel-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
         .add-panel label {
             font-weight: 600;
             color: #0b1b33;
@@ -363,17 +356,6 @@
             transform: scale(0.97);
         }
 
-        .add-panel .action-btn.reset-btn {
-            background: rgba(0,0,0,0.04);
-            color: #1f334a;
-            box-shadow: none;
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-
-        .add-panel .action-btn.reset-btn:hover {
-            background: rgba(0,0,0,0.08);
-        }
-
         .footer-meta {
             margin-top: 16px;
             text-align: right;
@@ -382,7 +364,6 @@
             opacity: 0.7;
         }
 
-        /* Модальное окно */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -484,7 +465,6 @@
             .header { flex-direction: column; align-items: start; gap: 12px; }
             .badge-limit { align-self: flex-start; }
             .add-panel { flex-direction: column; align-items: stretch; }
-            .add-panel-left { flex-wrap: wrap; }
             .add-panel input { width: 100%; }
             .day-cell { min-height: 56px; padding: 8px 2px; }
             .day-cell .day-number { font-size: 16px; }
@@ -550,16 +530,14 @@
         <div class="add-panel-left">
             <label><i class="fas fa-pen-fancy"></i> Баллы</label>
             <input type="number" id="pointsInput" placeholder="Например: 250" min="1" value="100">
-            <button class="action-btn" id="addPointsBtn"><i class="fas fa-plus-circle"></i> Добавить</button>
+            <button class="action-btn" id="addPointsBtn"><i class="fas fa-plus-circle"></i> Добавить за сегодня</button>
         </div>
-        <button class="action-btn reset-btn" id="resetMonthBtn"><i class="fas fa-rotate-left"></i> Сбросить месяц</button>
     </div>
     <div class="footer-meta">
         <i class="far fa-calendar-alt"></i> клик по дню — добавить баллы · лимит обнуляется 1-го числа
     </div>
 </div>
 
-<!-- Модальное окно -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <h2><i class="fas fa-star" style="color: #ffb800;"></i> Добавить баллы</h2>
@@ -672,17 +650,6 @@
             renderAll();
         }
 
-        function resetMonth(year, month) {
-            const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-            for (const key of pointsMap.keys()) {
-                if (key.startsWith(prefix)) {
-                    pointsMap.delete(key);
-                }
-            }
-            saveToStorage();
-            renderAll();
-        }
-
         function addPointsToDay(year, month, day, amount) {
             const currentMonthTotal = getMonthPoints(year, month);
             if (currentMonthTotal + amount > LIMIT) {
@@ -723,7 +690,6 @@
 
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-            const monthTotal = getMonthPoints(year, month);
 
             for (let i = 0; i < offset; i++) {
                 const empty = document.createElement('div');
@@ -805,29 +771,16 @@
 
             document.getElementById('addPointsBtn').addEventListener('click', function() {
                 const today = new Date();
-                const y = currentYear;
-                const m = currentMonth;
-                let day = today.getDate();
-                if (today.getMonth() !== m || today.getFullYear() !== y) {
-                    day = 1;
-                } else {
-                    const last = new Date(y, m+1, 0).getDate();
-                    if (day > last) day = last;
-                }
+                const y = today.getFullYear();
+                const m = today.getMonth();
+                const d = today.getDate();
 
                 const input = document.getElementById('pointsInput');
                 let val = parseInt(input.value, 10);
                 if (isNaN(val) || val < 1) val = 100;
-                addPointsToDay(y, m, day, val);
+                addPointsToDay(y, m, d, val);
             });
 
-            document.getElementById('resetMonthBtn').addEventListener('click', function() {
-                if (confirm(`Сбросить все баллы за ${document.getElementById('monthYear').textContent}?`)) {
-                    resetMonth(currentYear, currentMonth);
-                }
-            });
-
-            // Модальное окно
             document.getElementById('modalConfirm').addEventListener('click', function() {
                 if (!selectedDay) return;
                 const input = document.getElementById('modalPointsInput');
