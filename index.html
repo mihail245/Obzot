@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ozon Баллы за обзор · Лимит 40 000</title>
-    <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -36,7 +35,6 @@
             transition: 0.2s;
         }
 
-        /* заголовок */
         .header {
             display: flex;
             flex-wrap: wrap;
@@ -88,7 +86,6 @@
             font-size: 18px;
         }
 
-        /* статистика */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -161,7 +158,6 @@
             font-weight: 500;
         }
 
-        /* календарь */
         .calendar-section {
             margin-top: 8px;
         }
@@ -295,7 +291,6 @@
             margin-left: 2px;
         }
 
-        /* добавление баллов */
         .add-panel {
             margin-top: 28px;
             background: rgba(255, 255, 255, 0.5);
@@ -387,6 +382,103 @@
             opacity: 0.7;
         }
 
+        /* Модальное окно */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 40px;
+            padding: 32px 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .modal-box h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #0b1b33;
+        }
+
+        .modal-box .modal-date {
+            color: #5b6f89;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 14px 20px;
+            border-radius: 60px;
+            border: 2px solid #e2e8f0;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: 0.15s;
+            margin-bottom: 16px;
+        }
+
+        .modal-box input:focus {
+            border-color: #005bff;
+            box-shadow: 0 0 0 4px rgba(0, 91, 255, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .modal-actions button {
+            padding: 12px 32px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .modal-actions .btn-confirm {
+            background: #005bff;
+            color: white;
+            box-shadow: 0 6px 14px rgba(0, 91, 255, 0.25);
+        }
+
+        .modal-actions .btn-confirm:hover {
+            background: #0047cc;
+            transform: scale(0.97);
+        }
+
+        .modal-actions .btn-cancel {
+            background: #f1f4f9;
+            color: #1f334a;
+        }
+
+        .modal-actions .btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
         @media (max-width: 700px) {
             .card { padding: 20px; }
             .header { flex-direction: column; align-items: start; gap: 12px; }
@@ -396,6 +488,7 @@
             .add-panel input { width: 100%; }
             .day-cell { min-height: 56px; padding: 8px 2px; }
             .day-cell .day-number { font-size: 16px; }
+            .modal-box { padding: 24px 20px; }
         }
     </style>
 </head>
@@ -411,14 +504,17 @@
         </div>
     </div>
 
-    <!-- статистика -->
     <div class="stats-grid">
         <div class="stat-item">
-            <span class="stat-label">Всего за месяц</span>
+            <span class="stat-label">За всё время</span>
+            <span class="stat-value" id="totalAllTime">48 158</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">За месяц</span>
             <span class="stat-value" id="totalMonthPoints">0</span>
         </div>
         <div class="stat-item">
-            <span class="stat-label">Остаток</span>
+            <span class="stat-label">Остаток на месяц</span>
             <span class="stat-value" id="remainingPoints">40 000</span>
         </div>
         <div class="stat-item">
@@ -437,7 +533,6 @@
         </div>
     </div>
 
-    <!-- календарь -->
     <div class="calendar-section">
         <div class="calendar-nav">
             <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
@@ -451,7 +546,6 @@
         <div class="days-grid" id="daysGrid"></div>
     </div>
 
-    <!-- панель добавления -->
     <div class="add-panel">
         <div class="add-panel-left">
             <label><i class="fas fa-pen-fancy"></i> Баллы</label>
@@ -465,20 +559,31 @@
     </div>
 </div>
 
+<!-- Модальное окно -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Добавить баллы</h2>
+        <div class="modal-date" id="modalDate">15 марта 2026</div>
+        <input type="number" id="modalPointsInput" placeholder="Количество баллов" min="1" value="100">
+        <div class="modal-actions">
+            <button class="btn-confirm" id="modalConfirm"><i class="fas fa-check"></i> Добавить</button>
+            <button class="btn-cancel" id="modalCancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
 <script>
     (function() {
-        // ----- конфиг -----
         const LIMIT = 40000;
+        let ALL_TIME_POINTS = 48158;
 
-        // ----- состояние -----
-        let currentDate = new Date(); 
+        let currentDate = new Date();
         let currentYear = currentDate.getFullYear();
-        let currentMonth = currentDate.getMonth(); // 0-11
+        let currentMonth = currentDate.getMonth();
 
-        // Хранилище: { "2026-03-15": 1230, ... }
         let pointsMap = new Map();
+        let selectedDay = null;
 
-        // Загружаем из localStorage
         function loadFromStorage() {
             const raw = localStorage.getItem('ozon_points_map');
             if (raw) {
@@ -489,48 +594,50 @@
                     pointsMap = new Map();
                 }
             } else {
-                // демо-данные для примера (несколько дней)
                 const today = new Date();
                 const y = today.getFullYear();
                 const m = String(today.getMonth() + 1).padStart(2,'0');
                 const d = String(today.getDate()).padStart(2,'0');
-                // добавим пару записей для наглядности
                 const demo = {
                     [`${y}-${m}-${d}`]: 350,
                 };
-                // ещё пара дней назад
                 const d2 = new Date(today);
                 d2.setDate(today.getDate() - 1);
                 const y2 = d2.getFullYear();
                 const m2 = String(d2.getMonth() + 1).padStart(2,'0');
                 const d2s = String(d2.getDate()).padStart(2,'0');
                 demo[`${y2}-${m2}-${d2s}`] = 120;
-
                 const d3 = new Date(today);
                 d3.setDate(today.getDate() - 3);
                 const y3 = d3.getFullYear();
                 const m3 = String(d3.getMonth() + 1).padStart(2,'0');
                 const d3s = String(d3.getDate()).padStart(2,'0');
                 demo[`${y3}-${m3}-${d3s}`] = 80;
-
                 pointsMap = new Map(Object.entries(demo));
                 saveToStorage();
+            }
+
+            const allTimeRaw = localStorage.getItem('ozon_all_time_points');
+            if (allTimeRaw) {
+                const parsed = parseInt(allTimeRaw, 10);
+                if (!isNaN(parsed)) ALL_TIME_POINTS = parsed;
+            } else {
+                ALL_TIME_POINTS = 48158;
+                localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
             }
         }
 
         function saveToStorage() {
             const obj = Object.fromEntries(pointsMap);
             localStorage.setItem('ozon_points_map', JSON.stringify(obj));
+            localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
         }
 
-        // ----- вспомогательные -----
         function getMonthPoints(year, month) {
             let total = 0;
             const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
             for (const [key, val] of pointsMap) {
-                if (key.startsWith(prefix)) {
-                    total += val;
-                }
+                if (key.startsWith(prefix)) total += val;
             }
             return total;
         }
@@ -539,9 +646,7 @@
             const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
             let count = 0;
             for (const [key, val] of pointsMap) {
-                if (key.startsWith(prefix) && val > 0) {
-                    count++;
-                }
+                if (key.startsWith(prefix) && val > 0) count++;
             }
             return count;
         }
@@ -578,11 +683,24 @@
             renderAll();
         }
 
-        // ----- рендер -----
+        function addPointsToDay(year, month, day, amount) {
+            const currentMonthTotal = getMonthPoints(year, month);
+            if (currentMonthTotal + amount > LIMIT) {
+                alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
+                return false;
+            }
+            const existing = getDayPoints(year, month, day);
+            setDayPoints(year, month, day, existing + amount);
+            ALL_TIME_POINTS += amount;
+            localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
+            return true;
+        }
+
         function renderStats(year, month) {
             const total = getMonthPoints(year, month);
             const remaining = getRemaining(year, month);
             const days = getDaysWithPoints(year, month);
+            document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
             document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
             document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
             document.getElementById('daysWithPoints').textContent = days;
@@ -600,18 +718,13 @@
             const lastDay = new Date(year, month + 1, 0);
             const daysInMonth = lastDay.getDate();
 
-            // день недели первого числа (пн=0, вс=6)
-            let startWeekday = firstDay.getDay(); // 0=вс, 1=пн ...
-            // смещаем так, чтобы понедельник был 0
+            let startWeekday = firstDay.getDay();
             let offset = (startWeekday === 0) ? 6 : startWeekday - 1;
 
             const today = new Date();
             const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-
             const monthTotal = getMonthPoints(year, month);
-            const remaining = getRemaining(year, month);
 
-            // пустые ячейки до первого дня
             for (let i = 0; i < offset; i++) {
                 const empty = document.createElement('div');
                 empty.className = 'day-cell empty';
@@ -628,7 +741,6 @@
 
                 if (isToday) cell.classList.add('today');
 
-                // если перебор лимита (визуально)
                 const dayTotal = getMonthPoints(year, month);
                 const isOverLimit = (dayTotal + dayPoints) > LIMIT;
                 if (isOverLimit && dayPoints > 0) cell.classList.add('over-limit');
@@ -647,27 +759,18 @@
                 }
                 cell.appendChild(pointsSpan);
 
-                // клик по ячейке — добавить баллы
                 cell.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const input = document.getElementById('pointsInput');
-                    let val = parseInt(input.value, 10);
-                    if (isNaN(val) || val < 1) val = 100;
-                    // проверка лимита
-                    const currentMonthTotal = getMonthPoints(year, month);
-                    if (currentMonthTotal + val > LIMIT) {
-                        alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
-                        return;
-                    }
-                    const existing = getDayPoints(year, month, d);
-                    const newVal = existing + val;
-                    setDayPoints(year, month, d, newVal);
+                    selectedDay = { year, month, day };
+                    const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
+                    document.getElementById('modalDate').textContent = `${day} ${monthNames[month]} ${year}`;
+                    document.getElementById('modalPointsInput').value = 100;
+                    document.getElementById('modalOverlay').classList.add('active');
                 });
 
                 grid.appendChild(cell);
             }
 
-            // обновить навигацию
             const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
             document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
         }
@@ -677,11 +780,9 @@
             renderCalendar(currentYear, currentMonth);
         }
 
-        // ----- инициализация и события -----
         function init() {
             loadFromStorage();
 
-            // кнопки навигации
             document.getElementById('prevMonth').addEventListener('click', function() {
                 if (currentMonth === 0) {
                     currentMonth = 11;
@@ -702,18 +803,14 @@
                 renderAll();
             });
 
-            // добавить баллы за сегодня или выбранный день (по умолчанию сегодня)
             document.getElementById('addPointsBtn').addEventListener('click', function() {
                 const today = new Date();
                 const y = currentYear;
                 const m = currentMonth;
-                // если текущий месяц не совпадает с отображаемым, берём сегодняшний день только если он в этом месяце
                 let day = today.getDate();
-                // если текущий месяц не совпадает с отображаемым, берем 1 число
                 if (today.getMonth() !== m || today.getFullYear() !== y) {
                     day = 1;
                 } else {
-                    // проверка, что день существует
                     const last = new Date(y, m+1, 0).getDate();
                     if (day > last) day = last;
                 }
@@ -721,19 +818,36 @@
                 const input = document.getElementById('pointsInput');
                 let val = parseInt(input.value, 10);
                 if (isNaN(val) || val < 1) val = 100;
-                const currentMonthTotal = getMonthPoints(y, m);
-                if (currentMonthTotal + val > LIMIT) {
-                    alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
-                    return;
-                }
-                const existing = getDayPoints(y, m, day);
-                setDayPoints(y, m, day, existing + val);
+                addPointsToDay(y, m, day, val);
             });
 
-            // сброс месяца
             document.getElementById('resetMonthBtn').addEventListener('click', function() {
                 if (confirm(`Сбросить все баллы за ${document.getElementById('monthYear').textContent}?`)) {
                     resetMonth(currentYear, currentMonth);
+                }
+            });
+
+            // Модальное окно
+            document.getElementById('modalConfirm').addEventListener('click', function() {
+                if (!selectedDay) return;
+                const input = document.getElementById('modalPointsInput');
+                let val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 1) val = 100;
+                const { year, month, day } = selectedDay;
+                addPointsToDay(year, month, day, val);
+                document.getElementById('modalOverlay').classList.remove('active');
+                selectedDay = null;
+            });
+
+            document.getElementById('modalCancel').addEventListener('click', function() {
+                document.getElementById('modalOverlay').classList.remove('active');
+                selectedDay = null;
+            });
+
+            document.getElementById('modalOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    selectedDay = null;
                 }
             });
 
