@@ -727,9 +727,9 @@
 
                 cell.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    selectedDay = { year, month, day };
+                    selectedDay = { year, month, day: d };
                     const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-                    document.getElementById('modalDate').textContent = `${day} ${monthNames[month]} ${year}`;
+                    document.getElementById('modalDate').textContent = `${d} ${monthNames[month]} ${year}`;
                     document.getElementById('modalPointsInput').value = 100;
                     document.getElementById('modalOverlay').classList.add('active');
                 });
