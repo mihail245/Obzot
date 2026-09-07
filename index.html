@@ -6,7 +6,7 @@
     <title>Ozon Баллы за обзор · Трекер</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* CSS Переменные для смены тем (Светлая/Темная) */
+        /* CSS Переменные для смены тем */
         :root {
             --bg-gradient: linear-gradient(145deg, #f5f7fc 0%, #e9edf5 100%);
             --card-bg: rgba(255, 255, 255, 0.7);
@@ -17,11 +17,12 @@
             --input-bg: white;
             --input-border: rgba(0, 0, 0, 0.1);
             --day-bg: rgba(255, 255, 255, 0.4);
-            --day-hover: rgba(255, 255, 255, 0.8);
+            --day-hover: rgba(255, 255, 255, 0.9);
             --modal-bg: white;
             --btn-light: #f1f4f9;
             --btn-light-hover: #e2e8f0;
             --shadow: rgba(0, 20, 40, 0.25);
+            --ripple-color: #0f172a;
         }
 
         [data-theme="dark"] {
@@ -34,11 +35,12 @@
             --input-bg: #1e293b;
             --input-border: rgba(255, 255, 255, 0.1);
             --day-bg: rgba(30, 41, 59, 0.4);
-            --day-hover: rgba(51, 65, 85, 0.8);
+            --day-hover: rgba(51, 65, 85, 0.9);
             --modal-bg: #1e293b;
             --btn-light: #334155;
             --btn-light-hover: #475569;
             --shadow: rgba(0, 0, 0, 0.5);
+            --ripple-color: #f5f7fc;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; }
@@ -48,30 +50,30 @@
             background: var(--bg-gradient); 
             display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
             color: var(--text-main);
-            transition: background 0.3s ease, color 0.3s ease;
             overflow-x: hidden;
+            /* Плавность смены фона только после отработки анимации круга */
+            transition: color 0.3s ease; 
         }
         
-        /* Анимация круга как в Telegram */
+        /* Плавный круг смены темы (Telegram-style) */
         .theme-ripple {
             position: fixed;
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
             transform: scale(0);
-            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
         }
 
-        /* Общие стили карточек */
         .card { 
-            max-width: 1000px; width: 100%; 
+            max-width: 1100px; width: 100%; 
             background: var(--card-bg); 
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
             border-radius: 48px; padding: 30px 30px 40px; 
             box-shadow: 0 25px 50px -10px var(--shadow), inset 0 1px 2px rgba(255, 255, 255, 0.1); 
             border: 1px solid var(--border-color); 
             position: relative; 
-            transition: 0.3s;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         /* Экран Авторизации */
@@ -88,8 +90,8 @@
         .divider { display: flex; align-items: center; color: var(--text-muted); font-size: 14px; margin: 5px 0; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); margin: 0 10px; }
 
-        /* Верхняя панель управления */
-        .sync-panel { max-width: 1000px; width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--panel-bg); padding: 12px 20px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); backdrop-filter: blur(10px); }
+        /* Верхняя панель */
+        .sync-panel { max-width: 1100px; width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--panel-bg); padding: 12px 20px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); backdrop-filter: blur(10px); transition: 0.3s ease; }
         .sync-code-display { font-weight: 700; color: #005bff; font-size: 18px; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 16px; background: rgba(0, 91, 255, 0.08); border-radius: 12px; transition: 0.2s; }
         .sync-code-display:hover { background: rgba(0, 91, 255, 0.15); }
         .sync-actions { display: flex; gap: 10px; align-items: center; }
@@ -98,7 +100,6 @@
         .btn-logout { background: var(--btn-light); border: none; padding: 8px 16px; border-radius: 12px; font-weight: 600; color: #ff6b4a; cursor: pointer; transition: 0.2s; font-size: 14px; }
         .btn-logout:hover { background: #ffe5e0; }
 
-        /* Загрузка */
         .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--card-bg); backdrop-filter: blur(8px); border-radius: 48px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; font-size: 18px; font-weight: 600; color: #005bff; transition: 0.3s; }
         .loading-overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
 
@@ -107,9 +108,9 @@
         .header-left { display: flex; align-items: center; gap: 12px; }
         .logo-icon { background: #005bff; color: white; width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 16px -6px rgba(0, 91, 255, 0.3); }
         h1 { font-weight: 700; font-size: 24px; color: var(--text-main); }
-        .badge-limit { background: #ff6b4a; color: white; padding: 10px 22px; border-radius: 100px; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 14px rgba(255, 107, 74, 0.25); }
+        .badge-limit { background: #ff6b4a; color: white; padding: 10px 22px; border-radius: 100px; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 14px rgba(255, 107, 74, 0.25); transition: 0.3s; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; background: var(--panel-bg); border-radius: 32px; padding: 18px 24px; margin-bottom: 28px; border: 1px solid var(--border-color); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; background: var(--panel-bg); border-radius: 32px; padding: 18px 24px; margin-bottom: 28px; border: 1px solid var(--border-color); transition: 0.3s; }
         .stat-item { display: flex; flex-direction: column; }
         .stat-label { font-size: 14px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
         .edit-icon { cursor: pointer; color: #005bff; opacity: 0.7; transition: 0.2s; font-size: 13px; }
@@ -121,41 +122,60 @@
         .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-main); margin-top: 6px; font-weight: 500; }
         
         .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .month-year { font-weight: 700; font-size: 22px; color: var(--text-main); }
-        .nav-btn { background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 44px; height: 44px; border-radius: 30px; font-size: 20px; cursor: pointer; transition: 0.15s; }
+        .calendar-nav-center { display: flex; align-items: center; gap: 12px; }
+        .month-year { font-weight: 700; font-size: 22px; color: var(--text-main); transition: 0.2s; }
+        
+        .nav-btn { background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 44px; height: 44px; border-radius: 30px; font-size: 20px; cursor: pointer; transition: 0.15s; display: flex; justify-content: center; align-items: center;}
         .nav-btn:hover { background: var(--btn-light); transform: scale(0.96); }
+        .btn-view-toggle { width: auto; padding: 0 16px; border-radius: 20px; font-size: 16px; font-weight: 600; background: rgba(0, 91, 255, 0.08); border-color: transparent; color: #005bff; }
+        .btn-view-toggle:hover { background: rgba(0, 91, 255, 0.15); }
+
+        /* Стили контейнера календаря */
         .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
         .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        
         .day-cell { background: var(--day-bg); border-radius: 20px; padding: 12px 4px; text-align: center; color: var(--text-main); border: 1px solid var(--border-color); transition: all 0.1s ease; cursor: pointer; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .day-cell:hover { background: var(--day-hover); border-color: #005bff; transform: scale(1.02); }
-        .day-cell.empty { background: transparent; border-color: transparent; cursor: default; opacity: 0.5; }
+        .day-cell:hover { background: var(--day-hover); border-color: #005bff; transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .day-cell.empty { background: transparent; border-color: transparent; cursor: default; opacity: 0.5; box-shadow: none; pointer-events: none;}
         .day-cell .day-number { font-size: 18px; font-weight: 600; }
         .day-cell .day-points { font-size: 12px; font-weight: 600; background: rgba(0, 91, 255, 0.1); padding: 3px 8px; border-radius: 40px; margin-top: 4px; color: #005bff; }
         .day-cell .day-points.zero { color: var(--text-muted); background: transparent; }
         .day-cell.today { border: 2px solid #005bff; background: rgba(0, 91, 255, 0.05); }
         .day-cell.over-limit { background: rgba(255, 107, 74, 0.15); border-color: #ff6b4a; }
+
+        /* Режим Года */
+        .view-year { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .month-block { background: transparent; display: flex; flex-direction: column; }
+        .view-year .month-block { background: var(--panel-bg); padding: 16px; border-radius: 30px; border: 1px solid var(--border-color); }
+        .view-year .month-title { font-weight: 700; text-align: center; margin-bottom: 12px; color: var(--text-main); font-size: 18px; text-transform: capitalize; }
+        .view-year .day-cell { min-height: 44px; padding: 4px 2px; border-radius: 12px; }
+        .view-year .day-cell .day-number { font-size: 14px; }
+        .view-year .day-cell .day-points { font-size: 9px; padding: 1px 4px; }
         
-        .add-panel { margin-top: 28px; background: var(--panel-bg); border-radius: 40px; padding: 20px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--border-color); }
-        .add-panel-left { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; }
-        .add-panel label { font-weight: 600; font-size: 15px; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
-        .add-panel input { border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); padding: 12px 20px; border-radius: 60px; font-size: 16px; width: 150px; outline: none; }
-        
+        /* Модальное окно тапов по дате */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal-box { background: var(--modal-bg); border-radius: 40px; padding: 32px 40px; max-width: 450px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
         .modal-box h2 { font-size: 24px; margin-bottom: 8px; color: var(--text-main); }
-        .modal-box .modal-date { color: var(--text-muted); margin-bottom: 20px; }
-        .modal-box input { width: 100%; padding: 14px 20px; border-radius: 60px; border: 2px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 16px; outline: none; }
-        .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .modal-actions button { padding: 12px 24px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; transition: 0.15s;}
+        .modal-box .modal-date { color: var(--text-muted); margin-bottom: 20px; font-weight: 500;}
+        .modal-box input { width: 100%; padding: 14px 20px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 20px; outline: none; transition: 0.2s;}
+        .modal-box input:focus { border-color: #005bff; box-shadow: 0 0 0 3px rgba(0, 91, 255, 0.15); }
         
+        .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .modal-actions button { flex: 1; min-width: 120px; padding: 14px 20px; border-radius: 20px; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; font-size: 15px;}
         .btn-remove { background: rgba(255, 107, 74, 0.15); color: #ff6b4a; }
-        .btn-remove:hover { background: rgba(255, 107, 74, 0.25); }
+        .btn-remove:hover { background: rgba(255, 107, 74, 0.25); transform: translateY(-2px); }
+        .btn-cancel { width: 100%; flex: unset; margin-top: 5px; }
 
-        /* Управление видимостью секций */
-        #mainAppWrapper { display: none; width: 100%; max-width: 1000px; flex-direction: column; align-items: center; }
+        #mainAppWrapper { display: none; width: 100%; max-width: 1100px; flex-direction: column; align-items: center; }
 
-        @media (max-width: 700px) { .sync-panel { flex-direction: column; gap: 15px; align-items: flex-start; } .sync-actions { width: 100%; justify-content: space-between;} .modal-actions button, .add-panel-left input, .add-panel-left button { width: 100%; } }
+        @media (max-width: 900px) { .view-year { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 700px) { 
+            .sync-panel { flex-direction: column; gap: 15px; align-items: flex-start; } 
+            .sync-actions { width: 100%; justify-content: space-between;} 
+            .view-year { grid-template-columns: 1fr; }
+            .modal-actions button { flex: unset; width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -164,20 +184,19 @@
 <div class="card" id="authScreen">
     <div class="loading-overlay hidden" id="authLoader"><i class="fas fa-circle-notch fa-spin" style="font-size: 30px;"></i><div class="loading-text" style="margin-top:10px;">Проверка...</div></div>
     <div class="logo-icon" style="margin: 0 auto 20px;"><i class="fas fa-star"></i></div>
-    
     <div class="auth-actions">
         <button class="btn-primary" id="btnCreateAccount"><i class="fas fa-user-plus"></i> Создать новый аккаунт</button>
         <div class="divider">ИЛИ</div>
-        <input type="number" id="loginCodeInput" placeholder="Введите код аккаунта (Напр: 15)">
+        <input type="number" id="loginCodeInput" placeholder="Введите код (Напр: 15)">
         <button class="btn-secondary" id="btnLogin"><i class="fas fa-sign-in-alt"></i> Войти по коду</button>
     </div>
 </div>
 
-<!-- Основное приложение (Скрыто до входа) -->
+<!-- Основное приложение -->
 <div id="mainAppWrapper">
     <div class="sync-panel">
         <div class="sync-code-display" id="copyCodeBtn" title="Нажмите, чтобы скопировать">
-            <i class="fas fa-id-badge"></i> Код аккаунта: &nbsp;<span id="syncCodeDisplay">...</span>
+            <i class="fas fa-id-badge"></i> Код: &nbsp;<span id="syncCodeDisplay">...</span>
         </div>
         <div class="sync-actions">
             <button class="btn-theme" id="themeToggle" title="Сменить тему"><i class="fas fa-moon"></i></button>
@@ -196,7 +215,7 @@
                 <div class="logo-icon"><i class="fas fa-star"></i></div>
                 <h1>Баллы за обзор</h1>
             </div>
-            <div class="badge-limit"><i class="fas fa-gem"></i> 40 000 / месяц</div>
+            <div class="badge-limit"><i class="fas fa-gem"></i> <span id="topLimitDisplay">40 000 / месяц</span></div>
         </div>
 
         <div class="stats-grid">
@@ -204,45 +223,46 @@
                 <span class="stat-label">За всё время <i class="fas fa-pen edit-icon" id="editAllTimeBtn" title="Изменить"></i></span>
                 <span class="stat-value" id="totalAllTime">0</span>
             </div>
-            <div class="stat-item"><span class="stat-label">За месяц</span><span class="stat-value" id="totalMonthPoints">0</span></div>
-            <div class="stat-item"><span class="stat-label">Остаток на месяц</span><span class="stat-value" id="remainingPoints">40 000</span></div>
-            <div class="stat-item"><span class="stat-label">Дней</span><span class="stat-value" id="daysWithPoints">0</span></div>
+            <div class="stat-item"><span class="stat-label" id="statLabelMonthYear">За месяц</span><span class="stat-value" id="totalMonthPoints">0</span></div>
+            <div class="stat-item"><span class="stat-label" id="statLabelRemaining">Остаток на месяц</span><span class="stat-value" id="remainingPoints">40 000</span></div>
+            <div class="stat-item"><span class="stat-label">Дней с баллами</span><span class="stat-value" id="daysWithPoints">0</span></div>
             <div class="progress-wrap">
                 <div class="progress-bar-bg"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-                <div class="progress-label"><span>0</span><span id="progressPercent">0%</span><span>40 000</span></div>
+                <div class="progress-label"><span>0</span><span id="progressPercent">0%</span><span id="limitDisplay">40 000</span></div>
             </div>
         </div>
 
         <div class="calendar-section">
             <div class="calendar-nav">
                 <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-                <span class="month-year" id="monthYear">...</span>
+                <div class="calendar-nav-center">
+                    <span class="month-year" id="monthYear">...</span>
+                    <button class="nav-btn btn-view-toggle" id="toggleViewBtn" title="Развернуть год">
+                        <i class="fas fa-expand-arrows-alt" style="margin-right: 6px;"></i> Год
+                    </button>
+                </div>
                 <button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <div class="weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
-            <div class="days-grid" id="daysGrid"></div>
-        </div>
-
-        <div class="add-panel">
-            <div class="add-panel-left">
-                <label><i class="fas fa-pen-fancy"></i> Баллы</label>
-                <input type="number" id="pointsInput" placeholder="Сумма" min="1" value="100">
-                <button class="btn-primary" id="addPointsBtn"><i class="fas fa-plus-circle"></i> Добавить</button>
-                <button class="btn-remove" style="padding:14px 24px; border:none; border-radius:20px; font-weight:600; cursor:pointer;" id="removePointsBtn"><i class="fas fa-minus-circle"></i> Удалить</button>
+            
+            <div id="calendarContainer" class="view-month">
+                <!-- Сетка календаря генерируется через JS -->
             </div>
         </div>
     </div>
 </div>
 
+<!-- Модальное окно управления баллами -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Изменить баллы</h2>
+        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Баллы за день</h2>
         <div class="modal-date" id="modalDate">...</div>
-        <input type="number" id="modalPointsInput" placeholder="Количество баллов" min="1" value="100">
+        
+        <input type="number" id="modalPointsInput" placeholder="Кол-во баллов (напр: 150)" min="1">
+        
         <div class="modal-actions">
-            <button class="btn-primary" id="modalConfirm"><i class="fas fa-check"></i> Сохранить</button>
+            <button class="btn-primary" id="modalConfirm"><i class="fas fa-plus"></i> Добавить</button>
             <button class="btn-remove" id="modalRemove"><i class="fas fa-minus"></i> Удалить</button>
-            <button class="btn-secondary" id="modalCancel">Отмена</button>
+            <button class="btn-secondary btn-cancel" id="modalCancel">Отмена</button>
         </div>
     </div>
 </div>
@@ -263,36 +283,29 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- УПРАВЛЕНИЕ ТЕМАМИ И АНИМАЦИЯ (Telegram Style) ---
+    // --- УПРАВЛЕНИЕ ТЕМАМИ (Telegram Круговая Анимация) ---
     const savedTheme = localStorage.getItem('ozon_theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
 
     function updateThemeIcon(theme) {
         const icon = document.querySelector('#themeToggle i');
-        if (theme === 'dark') {
-            icon.className = 'fas fa-sun';
-        } else {
-            icon.className = 'fas fa-moon';
-        }
+        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
     }
 
     document.getElementById('themeToggle').addEventListener('click', function(e) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         const targetTheme = isDark ? 'light' : 'dark';
         
-        // Создаем круг анимации
         const ripple = document.createElement('div');
         ripple.className = 'theme-ripple';
-        // Цвет круга берем из цвета фона будущей темы
-        ripple.style.background = isDark ? '#f5f7fc' : '#0f172a';
+        // Цвет круга соответствует фону будущей темы
+        ripple.style.background = isDark ? '#f5f7fc' : '#0f172a'; 
         
-        // Позиция клика
         const rect = e.target.getBoundingClientRect();
         const x = e.clientX || rect.left + rect.width / 2;
         const y = e.clientY || rect.top + rect.height / 2;
         
-        // Вычисляем радиус, чтобы покрыть весь экран
         const maxW = Math.max(x, window.innerWidth - x);
         const maxH = Math.max(y, window.innerHeight - y);
         const radius = Math.sqrt(maxW*maxW + maxH*maxH);
@@ -303,33 +316,28 @@
         
         document.body.appendChild(ripple);
         
-        // Запускаем расширение
-        requestAnimationFrame(() => {
-            ripple.style.transform = 'scale(1)';
-        });
+        // Принудительный рефлоу для запуска анимации
+        void ripple.offsetWidth;
+        ripple.style.transform = 'scale(1)';
         
-        // Как только круг закрыл экран, меняем тему и плавно растворяем круг
+        // Переключаем тему, когда круг заполняет экран
         setTimeout(() => {
             document.body.setAttribute('data-theme', targetTheme);
             localStorage.setItem('ozon_theme', targetTheme);
             updateThemeIcon(targetTheme);
             
+            // Плавно растворяем круг, открывая уже измененный интерфейс
             ripple.style.opacity = '0';
-            ripple.style.transition = 'opacity 0.3s ease';
-            setTimeout(() => ripple.remove(), 300);
-        }, 600); // Совпадает с transition в CSS
+            setTimeout(() => ripple.remove(), 500);
+        }, 700); 
     });
 
-
-    // --- АВТОРИЗАЦИЯ И FIREBASE ---
+    // --- АВТОРИЗАЦИЯ ---
     const authScreen = document.getElementById('authScreen');
     const mainAppWrapper = document.getElementById('mainAppWrapper');
     const authLoader = document.getElementById('authLoader');
-    let MY_SYNC_KEY = null;
-    let docRef = null;
-    let unsubscribe = null; // Для отписки от событий при выходе
+    let MY_SYNC_KEY = null, docRef = null, unsubscribe = null;
 
-    // Безопасная генерация ID
     async function getNextSequentialId() {
         const counterRef = doc(db, 'system', 'counter');
         try {
@@ -345,25 +353,19 @@
             });
             return String(newId);
         } catch (error) {
-            console.error("Ошибка при получении ID: ", error);
-            alert("Ошибка сети. Проверьте подключение.");
-            return "ERROR";
+            alert("Ошибка сети. Проверьте подключение."); return "ERROR";
         }
     }
 
-    // Запуск приложения с конкретным ID
     function startMainApp(key) {
         MY_SYNC_KEY = key;
         localStorage.setItem('ozon_sync_key', key);
-        
         authScreen.style.display = 'none';
         mainAppWrapper.style.display = 'flex';
         document.getElementById('syncCodeDisplay').innerText = key;
-        
         docRef = doc(db, "users", key);
 
-        if(unsubscribe) unsubscribe(); // Отписываемся от старого, если был
-        
+        if(unsubscribe) unsubscribe();
         unsubscribe = onSnapshot(docRef, (docSnap) => {
             document.getElementById('appLoader').classList.add('hidden');
             if (docSnap.exists()) {
@@ -371,36 +373,25 @@
                 pointsMap = new Map(Object.entries(data.pointsMap || {}));
                 ALL_TIME_POINTS = data.allTimePoints || 0;
             } else {
-                pointsMap = new Map();
-                ALL_TIME_POINTS = 0;
+                pointsMap = new Map(); ALL_TIME_POINTS = 0;
             }
             renderAll();
         });
     }
 
-    // Проверка при загрузке страницы
     async function checkAuthOnLoad() {
         const savedKey = localStorage.getItem('ozon_sync_key');
         if (savedKey) {
             authLoader.classList.remove('hidden');
             try {
                 const docSnap = await getDoc(doc(db, "users", savedKey));
-                if (docSnap.exists()) {
-                    startMainApp(savedKey);
-                } else {
-                    // Если аккаунт был удален из базы, чистим память
-                    localStorage.removeItem('ozon_sync_key');
-                    authLoader.classList.add('hidden');
-                }
-            } catch(e) {
-                authLoader.classList.add('hidden');
-                alert("Ошибка подключения к серверу.");
-            }
+                if (docSnap.exists()) startMainApp(savedKey);
+                else { localStorage.removeItem('ozon_sync_key'); authLoader.classList.add('hidden'); }
+            } catch(e) { authLoader.classList.add('hidden'); }
         }
     }
     checkAuthOnLoad();
 
-    // Создание нового аккаунта
     document.getElementById('btnCreateAccount').addEventListener('click', async () => {
         authLoader.classList.remove('hidden');
         const newId = await getNextSequentialId();
@@ -408,183 +399,224 @@
             await setDoc(doc(db, "users", newId), { pointsMap: {}, allTimePoints: 0 });
             authLoader.classList.add('hidden');
             startMainApp(newId);
-        } else {
-            authLoader.classList.add('hidden');
-        }
+        } else authLoader.classList.add('hidden');
     });
 
-    // Вход по коду (Проверка существования)
     document.getElementById('btnLogin').addEventListener('click', async () => {
         const code = document.getElementById('loginCodeInput').value.trim();
         if (!code) return alert("Пожалуйста, введите код");
-        
         authLoader.classList.remove('hidden');
         try {
             const docSnap = await getDoc(doc(db, "users", code));
-            if (docSnap.exists()) {
-                authLoader.classList.add('hidden');
-                startMainApp(code);
-            } else {
-                authLoader.classList.add('hidden');
-                alert("Аккаунт с таким кодом не найден! Убедитесь, что ввели его правильно.");
-            }
-        } catch(e) {
-            authLoader.classList.add('hidden');
-            alert("Ошибка при поиске аккаунта.");
-        }
+            if (docSnap.exists()) { authLoader.classList.add('hidden'); startMainApp(code); }
+            else { authLoader.classList.add('hidden'); alert("Аккаунт с таким кодом не найден!"); }
+        } catch(e) { authLoader.classList.add('hidden'); alert("Ошибка при поиске аккаунта."); }
     });
 
-    // Кнопка ВЫХОД
     document.getElementById('btnLogout').addEventListener('click', () => {
-        if(confirm('Вы действительно хотите выйти из аккаунта?')) {
-            localStorage.removeItem('ozon_sync_key');
-            location.reload(); // Перезагружаем страницу для чистоты
-        }
+        if(confirm('Выйти из аккаунта?')) { localStorage.removeItem('ozon_sync_key'); location.reload(); }
     });
 
     document.getElementById('copyCodeBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(MY_SYNC_KEY);
-        alert('Код аккаунта скопирован: ' + MY_SYNC_KEY);
+        navigator.clipboard.writeText(MY_SYNC_KEY); alert('Код аккаунта скопирован: ' + MY_SYNC_KEY);
     });
 
-
-    // --- ЛОГИКА ТРЕКЕРА (Календарь и расчеты) ---
+    // --- ЛОГИКА ТРЕКЕРА И КАЛЕНДАРЯ ---
     const LIMIT = 40000;
-    let ALL_TIME_POINTS = 0;
-    let pointsMap = new Map();
-    let currentDate = new Date();
-    let currentYear = currentDate.getFullYear();
-    let currentMonth = currentDate.getMonth();
+    let ALL_TIME_POINTS = 0, pointsMap = new Map();
+    let currentDate = new Date(), currentYear = currentDate.getFullYear(), currentMonth = currentDate.getMonth();
+    
+    // Новая переменная: режим просмотра ('month' или 'year')
+    let calendarView = 'month'; 
     let selectedDay = null;
 
     document.getElementById('editAllTimeBtn').addEventListener('click', () => {
-        const newValue = prompt('Введите ваше текущее общее количество баллов за всё время:', ALL_TIME_POINTS);
-        if (newValue !== null) {
-            const parsed = parseInt(newValue, 10);
-            if (!isNaN(parsed) && parsed >= 0) {
-                ALL_TIME_POINTS = parsed;
-                saveToFirebase();
-            } else { alert("Пожалуйста, введите корректное число."); }
-        }
+        const val = prompt('Введите количество баллов за всё время:', ALL_TIME_POINTS);
+        if (val !== null && !isNaN(parseInt(val, 10))) { ALL_TIME_POINTS = parseInt(val, 10); saveToFirebase(); }
     });
 
     async function saveToFirebase() {
         if(!docRef) return;
-        const obj = Object.fromEntries(pointsMap);
-        await setDoc(docRef, { pointsMap: obj, allTimePoints: ALL_TIME_POINTS }, { merge: true });
+        await setDoc(docRef, { pointsMap: Object.fromEntries(pointsMap), allTimePoints: ALL_TIME_POINTS }, { merge: true });
     }
 
     function getMonthPoints(year, month) {
-        let total = 0;
-        const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+        let total = 0, prefix = `${year}-${String(month+1).padStart(2,'0')}`;
         for (const [key, val] of pointsMap) { if (key.startsWith(prefix)) total += val; }
         return total;
     }
 
-    function addPointsToDay(year, month, day, amount) {
+    function modifyPointsDay(year, month, day, amount, isSubtract) {
         const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const existing = pointsMap.get(key) || 0;
         
-        if (amount < 0 && Math.abs(amount) > existing) amount = -existing; 
+        let change = isSubtract ? -amount : amount;
+        if (change < 0 && Math.abs(change) > existing) change = -existing; 
 
-        const currentMonthTotal = getMonthPoints(year, month);
-        if (amount > 0 && (currentMonthTotal + amount > LIMIT)) {
-            alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
-            return false;
+        if (change > 0 && (getMonthPoints(year, month) + change > LIMIT)) {
+            alert(`Лимит ${LIMIT} баллов на месяц превышен!`); return false;
         }
         
-        const newTotal = existing + amount;
-        if (newTotal <= 0) pointsMap.delete(key);
-        else pointsMap.set(key, newTotal);
+        const newTotal = existing + change;
+        if (newTotal <= 0) pointsMap.delete(key); else pointsMap.set(key, newTotal);
         
-        ALL_TIME_POINTS += amount;
-        if(ALL_TIME_POINTS < 0) ALL_TIME_POINTS = 0;
-
+        ALL_TIME_POINTS = Math.max(0, ALL_TIME_POINTS + change);
         saveToFirebase();
         return true;
     }
 
-    function renderAll() {
-        const total = getMonthPoints(currentYear, currentMonth);
-        const remaining = Math.max(0, LIMIT - total);
+    // Генерация одного блока месяца (используется и для одиночного просмотра, и для годового)
+    function createMonthBlock(year, month, isYearView) {
+        const block = document.createElement('div');
+        block.className = 'month-block';
+
+        if (isYearView) {
+            const title = document.createElement('div');
+            title.className = 'month-title';
+            const mNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            title.textContent = mNames[month];
+            block.appendChild(title);
+        }
+
+        const weekdays = document.createElement('div');
+        weekdays.className = 'weekdays';
+        weekdays.innerHTML = '<span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>';
+        block.appendChild(weekdays);
+
+        const grid = document.createElement('div');
+        grid.className = 'days-grid';
         
-        let daysCount = 0;
-        const prefix = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
-        for (const [key, val] of pointsMap) { if (key.startsWith(prefix) && val > 0) daysCount++; }
-
-        document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
-        document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
-        document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
-        document.getElementById('daysWithPoints').textContent = daysCount;
-
-        const percent = Math.min(100, (total / LIMIT) * 100);
-        document.getElementById('progressFill').style.width = percent + '%';
-        document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
-
-        const grid = document.getElementById('daysGrid');
-        grid.innerHTML = '';
-        const firstDay = new Date(currentYear, currentMonth, 1);
-        const lastDay = new Date(currentYear, currentMonth + 1, 0);
-        
+        const firstDay = new Date(year, month, 1), lastDay = new Date(year, month + 1, 0);
         let offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
         const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+        const monthTotal = getMonthPoints(year, month);
 
         for (let i = 0; i < offset; i++) { grid.innerHTML += `<div class="day-cell empty"></div>`; }
 
         for (let d = 1; d <= lastDay.getDate(); d++) {
-            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const dayPoints = pointsMap.get(dateStr) || 0;
             const isToday = (dateStr === todayStr) ? 'today' : '';
-            const isOver = ((total + dayPoints) > LIMIT && dayPoints > 0) ? 'over-limit' : '';
+            const isOver = ((monthTotal + dayPoints) > LIMIT && dayPoints > 0) ? 'over-limit' : '';
             
             const cell = document.createElement('div');
             cell.className = `day-cell ${isToday} ${isOver}`;
             cell.innerHTML = `<span class="day-number">${d}</span><span class="day-points ${dayPoints===0?'zero':''}">${dayPoints>0 ? dayPoints+' б.' : '—'}</span>`;
             
             cell.addEventListener('click', () => {
-                selectedDay = { year: currentYear, month: currentMonth, day: d };
+                selectedDay = { year, month, day: d };
                 const mNames = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
-                document.getElementById('modalDate').textContent = `${d} ${mNames[currentMonth]} ${currentYear}`;
+                document.getElementById('modalDate').textContent = `${d} ${mNames[month]} ${year}`;
+                
+                const input = document.getElementById('modalPointsInput');
+                input.value = dayPoints > 0 ? dayPoints : ''; // Подставляем текущие баллы
                 document.getElementById('modalOverlay').classList.add('active');
+                setTimeout(() => input.focus(), 100);
             });
             grid.appendChild(cell);
         }
-        const mNamesFull = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-        document.getElementById('monthYear').textContent = `${mNamesFull[currentMonth]} ${currentYear}`;
+        block.appendChild(grid);
+        return block;
     }
 
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+    function renderAll() {
+        let total = 0, remaining = 0, daysCount = 0, limitVal = LIMIT, percent = 0;
+        const container = document.getElementById('calendarContainer');
+        container.innerHTML = '';
+
+        if (calendarView === 'month') {
+            // Статистика за МЕСЯЦ
+            total = getMonthPoints(currentYear, currentMonth);
+            remaining = Math.max(0, LIMIT - total);
+            for (const [key, val] of pointsMap) { if (key.startsWith(`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`) && val > 0) daysCount++; }
+            percent = Math.min(100, (total / LIMIT) * 100);
+
+            document.getElementById('statLabelMonthYear').textContent = 'За месяц';
+            document.getElementById('statLabelRemaining').textContent = 'Остаток на месяц';
+            document.getElementById('limitDisplay').textContent = '40 000';
+            document.getElementById('topLimitDisplay').textContent = '40 000 / месяц';
+            
+            const mNamesFull = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            document.getElementById('monthYear').textContent = `${mNamesFull[currentMonth]} ${currentYear}`;
+            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-expand-arrows-alt" style="margin-right: 6px;"></i> Год';
+            
+            container.className = 'view-month';
+            container.appendChild(createMonthBlock(currentYear, currentMonth, false));
+
+        } else {
+            // Статистика за ГОД
+            limitVal = LIMIT * 12; // 480 000
+            for(let m = 0; m < 12; m++) total += getMonthPoints(currentYear, m);
+            remaining = Math.max(0, limitVal - total);
+            for (const [key, val] of pointsMap) { if (key.startsWith(`${currentYear}-`) && val > 0) daysCount++; }
+            percent = Math.min(100, (total / limitVal) * 100);
+
+            document.getElementById('statLabelMonthYear').textContent = 'За год';
+            document.getElementById('statLabelRemaining').textContent = 'Остаток на год';
+            document.getElementById('limitDisplay').textContent = '480 000';
+            document.getElementById('topLimitDisplay').textContent = '480 000 / год';
+            
+            document.getElementById('monthYear').textContent = `${currentYear} год`;
+            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-compress-arrows-alt" style="margin-right: 6px;"></i> Месяц';
+            
+            container.className = 'view-year';
+            for (let m = 0; m < 12; m++) {
+                container.appendChild(createMonthBlock(currentYear, m, true));
+            }
+        }
+
+        // Обновление UI цифр
+        document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
+        document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
+        document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
+        document.getElementById('daysWithPoints').textContent = daysCount;
+        document.getElementById('progressFill').style.width = percent + '%';
+        document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+    }
+
+    // Переключение режимов (Месяц / Год)
+    document.getElementById('toggleViewBtn').addEventListener('click', () => {
+        calendarView = calendarView === 'month' ? 'year' : 'month';
         renderAll();
     });
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+
+    // Навигация (Стрелочки)
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        if (calendarView === 'month') {
+            if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+        } else { currentYear--; }
         renderAll();
     });
     
-    document.getElementById('addPointsBtn').addEventListener('click', () => {
-        const t = new Date();
-        let val = parseInt(document.getElementById('pointsInput').value, 10) || 100;
-        addPointsToDay(t.getFullYear(), t.getMonth(), t.getDate(), val);
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        if (calendarView === 'month') {
+            if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+        } else { currentYear++; }
+        renderAll();
     });
-    document.getElementById('removePointsBtn').addEventListener('click', () => {
-        const t = new Date();
-        let val = parseInt(document.getElementById('pointsInput').value, 10) || 100;
-        addPointsToDay(t.getFullYear(), t.getMonth(), t.getDate(), -val);
-    });
+    
+    // Модальное окно (Тапы по дням)
     document.getElementById('modalConfirm').addEventListener('click', () => {
         if (!selectedDay) return;
-        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 100;
-        addPointsToDay(selectedDay.year, selectedDay.month, selectedDay.day, val);
+        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
+        if(val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, false);
         document.getElementById('modalOverlay').classList.remove('active');
     });
+
     document.getElementById('modalRemove').addEventListener('click', () => {
         if (!selectedDay) return;
-        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 100;
-        addPointsToDay(selectedDay.year, selectedDay.month, selectedDay.day, -val);
+        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
+        if(val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, true);
         document.getElementById('modalOverlay').classList.remove('active');
     });
+
     document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('active'));
+    
+    // Закрытие модального окна по клику вне его
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+        if(e.target === this) this.classList.remove('active');
+    });
+
 </script>
 </body>
 </html>
