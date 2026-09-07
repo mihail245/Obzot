@@ -3,812 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ozon Баллы за обзор · Лимит 40 000</title>
+    <title>Ozon Баллы за обзор · Синхронизация</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; }
+        body { min-height: 100vh; background: linear-gradient(145deg, #f5f7fc 0%, #e9edf5 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
+        
+        .sync-panel { max-width: 1000px; width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(255, 255, 255, 0.6); padding: 12px 20px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 4px 15px rgba(0,0,0,0.03); backdrop-filter: blur(10px); }
+        .sync-code-display { font-weight: 700; color: #005bff; font-size: 18px; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 16px; background: rgba(0, 91, 255, 0.08); border-radius: 12px; transition: 0.2s; }
+        .sync-code-display:hover { background: rgba(0, 91, 255, 0.15); }
+        .sync-actions button { background: white; border: 1px solid #d1d9e6; padding: 8px 16px; border-radius: 12px; font-weight: 600; color: #1f334a; cursor: pointer; transition: 0.2s; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .sync-actions button:hover { border-color: #005bff; color: #005bff; }
+        
+        .card { max-width: 1000px; width: 100%; background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 48px; padding: 30px 30px 40px; box-shadow: 0 25px 50px -10px rgba(0, 20, 40, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.5); transition: 0.2s; position: relative; }
+        
+        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); backdrop-filter: blur(4px); border-radius: 48px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; font-size: 18px; font-weight: 600; color: #005bff; opacity: 1; transition: 0.3s; }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+        .loading-text { margin-top: 12px; }
 
-        body {
-            min-height: 100vh;
-            background: linear-gradient(145deg, #f5f7fc 0%, #e9edf5 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+        .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { background: #005bff; color: white; width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 16px -6px rgba(0, 91, 255, 0.3); }
+        h1 { font-weight: 700; font-size: 24px; color: #0b1b33; }
+        .badge-limit { background: #ff6b4a; color: white; padding: 10px 22px; border-radius: 100px; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 14px rgba(255, 107, 74, 0.25); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; background: rgba(255, 255, 255, 0.5); border-radius: 32px; padding: 18px 24px; margin-bottom: 28px; border: 1px solid rgba(255, 255, 255, 0.7); }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-label { font-size: 14px; font-weight: 500; color: #2d4059; opacity: 0.7; text-transform: uppercase; }
+        .stat-value { font-size: 26px; font-weight: 700; color: #0b1b33; margin-top: 4px; }
+        .progress-wrap { grid-column: 1 / -1; margin-top: 6px; }
+        .progress-bar-bg { width: 100%; height: 12px; background: rgba(0, 0, 0, 0.07); border-radius: 100px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #005bff, #4d8aff); border-radius: 100px; width: 0%; transition: width 0.3s ease; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #1f334a; margin-top: 6px; font-weight: 500; }
+        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .month-year { font-weight: 700; font-size: 22px; color: #0b1b33; }
+        .nav-btn { background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.4); width: 44px; height: 44px; border-radius: 30px; font-size: 20px; cursor: pointer; transition: 0.15s; }
+        .nav-btn:hover { background: white; transform: scale(0.96); }
+        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: #3a5370; font-size: 14px; margin-bottom: 12px; }
+        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .day-cell { background: rgba(255, 255, 255, 0.4); border-radius: 20px; padding: 12px 4px; text-align: center; color: #14273e; border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.1s ease; cursor: pointer; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .day-cell:hover { background: rgba(255, 255, 255, 0.8); border-color: #b3c9ff; transform: scale(1.02); }
+        .day-cell.empty { background: transparent; border-color: transparent; cursor: default; opacity: 0.5; }
+        .day-cell .day-number { font-size: 18px; font-weight: 600; }
+        .day-cell .day-points { font-size: 12px; font-weight: 600; background: rgba(0, 91, 255, 0.08); padding: 3px 8px; border-radius: 40px; margin-top: 4px; color: #0055cc; }
+        .day-cell .day-points.zero { color: #7a8aa0; background: rgba(0,0,0,0.02); }
+        .day-cell.today { border: 2px solid #005bff; background: rgba(0, 91, 255, 0.06); }
+        .day-cell.over-limit { background: #ffd9d0; border-color: #ff6b4a; }
+        
+        .add-panel { margin-top: 28px; background: rgba(255, 255, 255, 0.5); border-radius: 40px; padding: 20px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid rgba(255, 255, 255, 0.6); }
+        .add-panel-left { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; width: 100%; }
+        .add-panel label { font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+        .add-panel input { border: 1px solid rgba(0, 0, 0, 0.04); padding: 12px 20px; border-radius: 60px; font-size: 16px; width: 150px; outline: none; }
+        .action-btn { background: #005bff; border: none; color: white; padding: 12px 28px; border-radius: 60px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .action-btn:hover { background: #0047cc; }
+        .action-btn-remove { background: #ff6b4a; border: none; color: white; padding: 12px 28px; border-radius: 60px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .action-btn-remove:hover { background: #e85535; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: white; border-radius: 40px; padding: 32px 40px; max-width: 450px; width: 90%; text-align: center; }
+        .modal-box h2 { font-size: 24px; margin-bottom: 8px; }
+        .modal-box .modal-date { color: #5b6f89; margin-bottom: 20px; }
+        .modal-box input { width: 100%; padding: 14px 20px; border-radius: 60px; border: 2px solid #e2e8f0; font-size: 20px; font-weight: 600; text-align: center; margin-bottom: 16px; outline: none; }
+        .modal-box input:focus { border-color: #005bff; }
+        .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .modal-actions button { padding: 12px 24px; border-radius: 60px; font-weight: 600; border: none; cursor: pointer; transition: 0.15s;}
+        
+        .btn-confirm { background: #005bff; color: white; }
+        .btn-confirm:hover { background: #0047cc; }
+        .btn-remove { background: #ffe5e0; color: #ff6b4a; }
+        .btn-remove:hover { background: #ffcec5; }
+        .btn-cancel { background: #f1f4f9; color: #1f334a; }
+        .btn-cancel:hover { background: #e2e8f0; }
 
-        .card {
-            max-width: 1000px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 48px;
-            padding: 30px 30px 40px;
-            box-shadow: 0 25px 50px -10px rgba(0, 20, 40, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: 0.2s;
-        }
-
-        .header {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-icon {
-            background: #005bff;
-            color: white;
-            width: 48px;
-            height: 48px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 8px 16px -6px rgba(0, 91, 255, 0.3);
-        }
-
-        h1 {
-            font-weight: 700;
-            font-size: 24px;
-            color: #0b1b33;
-            letter-spacing: -0.3px;
-        }
-
-        .badge-limit {
-            background: #ff6b4a;
-            color: white;
-            padding: 10px 22px;
-            border-radius: 100px;
-            font-weight: 600;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 6px 14px rgba(255, 107, 74, 0.25);
-        }
-
-        .badge-limit i {
-            font-size: 18px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 32px;
-            padding: 18px 24px;
-            margin-bottom: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #2d4059;
-            opacity: 0.7;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        .stat-value {
-            font-size: 26px;
-            font-weight: 700;
-            color: #0b1b33;
-            margin-top: 4px;
-        }
-
-        .stat-value small {
-            font-size: 16px;
-            font-weight: 400;
-            color: #4a5f7a;
-            margin-left: 4px;
-        }
-
-        .progress-wrap {
-            grid-column: 1 / -1;
-            margin-top: 6px;
-        }
-
-        .progress-bar-bg {
-            width: 100%;
-            height: 12px;
-            background: rgba(0, 0, 0, 0.07);
-            border-radius: 100px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #005bff, #4d8aff);
-            border-radius: 100px;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .progress-label {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            color: #1f334a;
-            margin-top: 6px;
-            font-weight: 500;
-        }
-
-        .calendar-section {
-            margin-top: 8px;
-        }
-
-        .calendar-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 18px;
-        }
-
-        .month-year {
-            font-weight: 700;
-            font-size: 22px;
-            color: #0b1b33;
-            letter-spacing: -0.2px;
-        }
-
-        .nav-btn {
-            background: white;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 30px;
-            font-size: 20px;
-            color: #1f334a;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
-            transition: 0.15s;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(2px);
-        }
-
-        .nav-btn:hover {
-            background: white;
-            box-shadow: 0 8px 18px rgba(0, 20, 40, 0.08);
-            transform: scale(0.96);
-        }
-
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: #3a5370;
-            font-size: 14px;
-            margin-bottom: 12px;
-            letter-spacing: 0.2px;
-        }
-
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-
-        .day-cell {
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 20px;
-            padding: 12px 4px;
-            text-align: center;
-            font-weight: 500;
-            color: #14273e;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.1s ease;
-            cursor: pointer;
-            position: relative;
-            min-height: 68px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.01);
-        }
-
-        .day-cell:hover {
-            background: rgba(255, 255, 255, 0.8);
-            border-color: #b3c9ff;
-            transform: scale(1.02);
-        }
-
-        .day-cell.empty {
-            background: transparent;
-            backdrop-filter: none;
-            border: 1px solid transparent;
-            cursor: default;
-            box-shadow: none;
-            opacity: 0.5;
-        }
-
-        .day-cell .day-number {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .day-cell .day-points {
-            font-size: 12px;
-            font-weight: 600;
-            background: rgba(0, 91, 255, 0.08);
-            padding: 3px 8px;
-            border-radius: 40px;
-            margin-top: 4px;
-            color: #0055cc;
-            letter-spacing: 0.2px;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(0, 91, 255, 0.05);
-        }
-
-        .day-cell .day-points.zero {
-            color: #7a8aa0;
-            background: rgba(0,0,0,0.02);
-        }
-
-        .day-cell.today {
-            border: 2px solid #005bff;
-            background: rgba(0, 91, 255, 0.06);
-            box-shadow: 0 0 0 2px rgba(0, 91, 255, 0.1);
-        }
-
-        .day-cell.over-limit {
-            background: #ffd9d0;
-            border-color: #ff6b4a;
-        }
-
-        .day-cell .fa-star {
-            color: #ffb800;
-            font-size: 10px;
-            margin-left: 2px;
-        }
-
-        .add-panel {
-            margin-top: 28px;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-radius: 40px;
-            padding: 20px 28px;
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
-
-        .add-panel label {
-            font-weight: 600;
-            color: #0b1b33;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .add-panel input {
-            border: none;
-            background: white;
-            padding: 12px 20px;
-            border-radius: 60px;
-            font-size: 16px;
-            width: 150px;
-            font-weight: 500;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            outline: none;
-            transition: 0.15s;
-        }
-
-        .add-panel input:focus {
-            border-color: #005bff;
-            box-shadow: 0 0 0 3px rgba(0, 91, 255, 0.1);
-        }
-
-        .add-panel .action-btn {
-            background: #005bff;
-            border: none;
-            color: white;
-            padding: 12px 28px;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: 0.15s;
-            box-shadow: 0 8px 18px -6px rgba(0, 91, 255, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .add-panel .action-btn:hover {
-            background: #0047cc;
-            transform: scale(0.97);
-        }
-
-        .footer-meta {
-            margin-top: 16px;
-            text-align: right;
-            font-size: 13px;
-            color: #5b6f89;
-            opacity: 0.7;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 40px;
-            padding: 32px 40px;
-            max-width: 420px;
-            width: 90%;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-
-        .modal-box h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            color: #0b1b33;
-        }
-
-        .modal-box .modal-date {
-            color: #5b6f89;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .modal-box input {
-            width: 100%;
-            padding: 14px 20px;
-            border-radius: 60px;
-            border: 2px solid #e2e8f0;
-            font-size: 20px;
-            font-weight: 600;
-            text-align: center;
-            outline: none;
-            transition: 0.15s;
-            margin-bottom: 16px;
-        }
-
-        .modal-box input:focus {
-            border-color: #005bff;
-            box-shadow: 0 0 0 4px rgba(0, 91, 255, 0.1);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .modal-actions button {
-            padding: 12px 32px;
-            border-radius: 60px;
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-
-        .modal-actions .btn-confirm {
-            background: #005bff;
-            color: white;
-            box-shadow: 0 6px 14px rgba(0, 91, 255, 0.25);
-        }
-
-        .modal-actions .btn-confirm:hover {
-            background: #0047cc;
-            transform: scale(0.97);
-        }
-
-        .modal-actions .btn-cancel {
-            background: #f1f4f9;
-            color: #1f334a;
-        }
-
-        .modal-actions .btn-cancel:hover {
-            background: #e2e8f0;
-        }
-
-        @media (max-width: 700px) {
-            .card { padding: 20px; }
-            .header { flex-direction: column; align-items: start; gap: 12px; }
-            .badge-limit { align-self: flex-start; }
-            .add-panel { flex-direction: column; align-items: stretch; }
-            .add-panel input { width: 100%; }
-            .day-cell { min-height: 56px; padding: 8px 2px; }
-            .day-cell .day-number { font-size: 16px; }
-            .modal-box { padding: 24px 20px; }
-        }
+        @media (max-width: 700px) { .sync-panel { flex-direction: column; gap: 10px; align-items: flex-start; } .sync-actions, .sync-actions button { width: 100%; } .modal-actions button { width: 100%; } }
     </style>
 </head>
 <body>
+
+<div class="sync-panel">
+    <div class="sync-code-display" id="copyCodeBtn" title="Нажмите, чтобы скопировать">
+        <i class="fas fa-id-badge"></i> Код аккаунта: &nbsp;<span id="syncCodeDisplay">Загрузка...</span>
+    </div>
+    <div class="sync-actions">
+        <button id="enterOtherCodeBtn"><i class="fas fa-sign-in-alt"></i> Войти по другому коду</button>
+    </div>
+</div>
+
 <div class="card" id="app">
+    <div class="loading-overlay" id="loadingOverlay">
+        <i class="fas fa-spinner fa-spin" style="font-size: 30px;"></i>
+        <div class="loading-text" id="loadingText">Подключение к базе...</div>
+    </div>
+
     <div class="header">
         <div class="header-left">
             <div class="logo-icon"><i class="fas fa-star"></i></div>
             <h1>Баллы за обзор</h1>
         </div>
-        <div class="badge-limit">
-            <i class="fas fa-gem"></i> 40 000 / месяц
-        </div>
+        <div class="badge-limit"><i class="fas fa-gem"></i> 40 000 / месяц</div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-item">
-            <span class="stat-label">За всё время</span>
-            <span class="stat-value" id="totalAllTime">48 158</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-label">За месяц</span>
-            <span class="stat-value" id="totalMonthPoints">0</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-label">Остаток на месяц</span>
-            <span class="stat-value" id="remainingPoints">40 000</span>
-        </div>
-        <div class="stat-item">
-            <span class="stat-label">Дней с баллами</span>
-            <span class="stat-value" id="daysWithPoints">0</span>
-        </div>
+        <div class="stat-item"><span class="stat-label">За всё время</span><span class="stat-value" id="totalAllTime">0</span></div>
+        <div class="stat-item"><span class="stat-label">За месяц</span><span class="stat-value" id="totalMonthPoints">0</span></div>
+        <div class="stat-item"><span class="stat-label">Остаток на месяц</span><span class="stat-value" id="remainingPoints">40 000</span></div>
+        <div class="stat-item"><span class="stat-label">Дней</span><span class="stat-value" id="daysWithPoints">0</span></div>
         <div class="progress-wrap">
-            <div class="progress-bar-bg">
-                <div class="progress-fill" id="progressFill" style="width:0%"></div>
-            </div>
-            <div class="progress-label">
-                <span>0</span>
-                <span id="progressPercent">0%</span>
-                <span>40 000</span>
-            </div>
+            <div class="progress-bar-bg"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+            <div class="progress-label"><span>0</span><span id="progressPercent">0%</span><span>40 000</span></div>
         </div>
     </div>
 
     <div class="calendar-section">
         <div class="calendar-nav">
             <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-            <span class="month-year" id="monthYear">Март 2026</span>
+            <span class="month-year" id="monthYear">...</span>
             <button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
         </div>
-
-        <div class="weekdays">
-            <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
-        </div>
+        <div class="weekdays"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
         <div class="days-grid" id="daysGrid"></div>
     </div>
 
     <div class="add-panel">
         <div class="add-panel-left">
             <label><i class="fas fa-pen-fancy"></i> Баллы</label>
-            <input type="number" id="pointsInput" placeholder="Например: 250" min="1" value="100">
-            <button class="action-btn" id="addPointsBtn"><i class="fas fa-plus-circle"></i> Добавить за сегодня</button>
+            <input type="number" id="pointsInput" placeholder="Сумма" min="1" value="100">
+            <button class="action-btn" id="addPointsBtn"><i class="fas fa-plus-circle"></i> Добавить</button>
+            <button class="action-btn-remove" id="removePointsBtn"><i class="fas fa-minus-circle"></i> Удалить</button>
         </div>
-    </div>
-    <div class="footer-meta">
-        <i class="far fa-calendar-alt"></i> клик по дню — добавить баллы · лимит обнуляется 1-го числа
     </div>
 </div>
 
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
-        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Добавить баллы</h2>
-        <div class="modal-date" id="modalDate">15 марта 2026</div>
+        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Изменить баллы</h2>
+        <div class="modal-date" id="modalDate">...</div>
         <input type="number" id="modalPointsInput" placeholder="Количество баллов" min="1" value="100">
         <div class="modal-actions">
-            <button class="btn-confirm" id="modalConfirm"><i class="fas fa-check"></i> Добавить</button>
+            <button class="btn-confirm" id="modalConfirm"><i class="fas fa-check"></i> Сохранить</button>
+            <button class="btn-remove" id="modalRemove"><i class="fas fa-minus"></i> Удалить</button>
             <button class="btn-cancel" id="modalCancel">Отмена</button>
         </div>
     </div>
 </div>
 
-<script>
-    (function() {
-        const LIMIT = 40000;
-        let ALL_TIME_POINTS = 48158;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        let currentDate = new Date();
-        let currentYear = currentDate.getFullYear();
-        let currentMonth = currentDate.getMonth();
+    const firebaseConfig = {
+        apiKey: "AIzaSyB7Rcc-WsP1e-Iwr3sKYFeZ_EQdcQhabl4",
+        authDomain: "obzorsait.firebaseapp.com",
+        projectId: "obzorsait",
+        storageBucket: "obzorsait.firebasestorage.app",
+        messagingSenderId: "544167608544",
+        appId: "1:544167608544:web:59dc2dabe874e5ba37d085"
+    };
 
-        let pointsMap = new Map();
-        let selectedDay = null;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        function loadFromStorage() {
-            const raw = localStorage.getItem('ozon_points_map');
-            if (raw) {
-                try {
-                    const parsed = JSON.parse(raw);
-                    pointsMap = new Map(Object.entries(parsed));
-                } catch(e) {
-                    pointsMap = new Map();
+    // Функция безопасной генерации числового ID через транзакции
+    async function getNextSequentialId() {
+        const counterRef = doc(db, 'system', 'counter');
+        try {
+            const newId = await runTransaction(db, async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+                if (!counterDoc.exists()) {
+                    transaction.set(counterRef, { lastId: 1 });
+                    return 1;
                 }
+                const newLastId = counterDoc.data().lastId + 1;
+                transaction.update(counterRef, { lastId: newLastId });
+                return newLastId;
+            });
+            return String(newId);
+        } catch (error) {
+            console.error("Ошибка при получении ID: ", error);
+            alert("Ошибка регистрации профиля. Проверьте правила базы данных.");
+            return "ERROR";
+        }
+    }
+
+    let MY_SYNC_KEY;
+    let docRef;
+
+    // Глобальные переменные данных
+    const LIMIT = 40000;
+    let ALL_TIME_POINTS = 0;
+    let pointsMap = new Map();
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth();
+    let selectedDay = null;
+
+    // Инициализация приложения (Асинхронная)
+    async function initApp() {
+        MY_SYNC_KEY = localStorage.getItem('ozon_sync_key');
+        
+        if (!MY_SYNC_KEY) {
+            document.getElementById('loadingText').innerText = "Создаем профиль...";
+            MY_SYNC_KEY = await getNextSequentialId();
+            if (MY_SYNC_KEY !== "ERROR") {
+                localStorage.setItem('ozon_sync_key', MY_SYNC_KEY);
+            }
+        }
+        
+        document.getElementById('syncCodeDisplay').innerText = MY_SYNC_KEY;
+        document.getElementById('loadingText').innerText = "Синхронизация данных...";
+
+        docRef = doc(db, "users", MY_SYNC_KEY);
+
+        // Слушатель Firebase в реальном времени
+        onSnapshot(docRef, (docSnap) => {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                pointsMap = new Map(Object.entries(data.pointsMap || {}));
+                ALL_TIME_POINTS = data.allTimePoints || 0;
             } else {
-                const today = new Date();
-                const y = today.getFullYear();
-                const m = String(today.getMonth() + 1).padStart(2,'0');
-                const d = String(today.getDate()).padStart(2,'0');
-                const demo = {
-                    [`${y}-${m}-${d}`]: 350,
-                };
-                const d2 = new Date(today);
-                d2.setDate(today.getDate() - 1);
-                const y2 = d2.getFullYear();
-                const m2 = String(d2.getMonth() + 1).padStart(2,'0');
-                const d2s = String(d2.getDate()).padStart(2,'0');
-                demo[`${y2}-${m2}-${d2s}`] = 120;
-                const d3 = new Date(today);
-                d3.setDate(today.getDate() - 3);
-                const y3 = d3.getFullYear();
-                const m3 = String(d3.getMonth() + 1).padStart(2,'0');
-                const d3s = String(d3.getDate()).padStart(2,'0');
-                demo[`${y3}-${m3}-${d3s}`] = 80;
-                pointsMap = new Map(Object.entries(demo));
-                saveToStorage();
+                pointsMap = new Map();
+                ALL_TIME_POINTS = 0;
             }
-
-            const allTimeRaw = localStorage.getItem('ozon_all_time_points');
-            if (allTimeRaw) {
-                const parsed = parseInt(allTimeRaw, 10);
-                if (!isNaN(parsed)) ALL_TIME_POINTS = parsed;
-            } else {
-                ALL_TIME_POINTS = 48158;
-                localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
-            }
-        }
-
-        function saveToStorage() {
-            const obj = Object.fromEntries(pointsMap);
-            localStorage.setItem('ozon_points_map', JSON.stringify(obj));
-            localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
-        }
-
-        function getMonthPoints(year, month) {
-            let total = 0;
-            const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-            for (const [key, val] of pointsMap) {
-                if (key.startsWith(prefix)) total += val;
-            }
-            return total;
-        }
-
-        function getDaysWithPoints(year, month) {
-            const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-            let count = 0;
-            for (const [key, val] of pointsMap) {
-                if (key.startsWith(prefix) && val > 0) count++;
-            }
-            return count;
-        }
-
-        function getRemaining(year, month) {
-            const used = getMonthPoints(year, month);
-            return Math.max(0, LIMIT - used);
-        }
-
-        function getDayPoints(year, month, day) {
-            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            return pointsMap.get(key) || 0;
-        }
-
-        function setDayPoints(year, month, day, value) {
-            const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            if (value <= 0) {
-                pointsMap.delete(key);
-            } else {
-                pointsMap.set(key, value);
-            }
-            saveToStorage();
             renderAll();
+        }, (error) => {
+            console.error("Ошибка Firebase:", error);
+            alert("Не удалось загрузить данные.");
+        });
+    }
+
+    // Запускаем инициализацию
+    initApp();
+
+    // Кнопка входа по другому коду
+    document.getElementById('enterOtherCodeBtn').addEventListener('click', () => {
+        const code = prompt('Введите ваш числовой код аккаунта (например: 1, 2, 3):');
+        if (code && code.trim().length > 0) {
+            localStorage.setItem('ozon_sync_key', code.trim());
+            location.reload();
+        }
+    });
+
+    document.getElementById('copyCodeBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText(MY_SYNC_KEY);
+        alert('Код скопирован: ' + MY_SYNC_KEY);
+    });
+
+    async function saveToFirebase() {
+        const obj = Object.fromEntries(pointsMap);
+        await setDoc(docRef, { pointsMap: obj, allTimePoints: ALL_TIME_POINTS }, { merge: true });
+    }
+
+    function getMonthPoints(year, month) {
+        let total = 0;
+        const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+        for (const [key, val] of pointsMap) { if (key.startsWith(prefix)) total += val; }
+        return total;
+    }
+
+    function addPointsToDay(year, month, day, amount) {
+        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const existing = pointsMap.get(key) || 0;
+        
+        if (amount < 0 && Math.abs(amount) > existing) {
+            amount = -existing; 
         }
 
-        function addPointsToDay(year, month, day, amount) {
-            const currentMonthTotal = getMonthPoints(year, month);
-            if (currentMonthTotal + amount > LIMIT) {
-                alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
-                return false;
-            }
-            const existing = getDayPoints(year, month, day);
-            setDayPoints(year, month, day, existing + amount);
-            ALL_TIME_POINTS += amount;
-            localStorage.setItem('ozon_all_time_points', String(ALL_TIME_POINTS));
-            return true;
+        const currentMonthTotal = getMonthPoints(year, month);
+        if (amount > 0 && (currentMonthTotal + amount > LIMIT)) {
+            alert(`Лимит ${LIMIT} баллов. Осталось: ${LIMIT - currentMonthTotal}`);
+            return false;
+        }
+        
+        const newTotal = existing + amount;
+        if (newTotal <= 0) {
+            pointsMap.delete(key);
+        } else {
+            pointsMap.set(key, newTotal);
+        }
+        
+        ALL_TIME_POINTS += amount;
+        if(ALL_TIME_POINTS < 0) ALL_TIME_POINTS = 0;
+
+        saveToFirebase();
+        return true;
+    }
+
+    function renderAll() {
+        const total = getMonthPoints(currentYear, currentMonth);
+        const remaining = Math.max(0, LIMIT - total);
+        
+        let daysCount = 0;
+        const prefix = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+        for (const [key, val] of pointsMap) { if (key.startsWith(prefix) && val > 0) daysCount++; }
+
+        document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
+        document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
+        document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
+        document.getElementById('daysWithPoints').textContent = daysCount;
+
+        const percent = Math.min(100, (total / LIMIT) * 100);
+        document.getElementById('progressFill').style.width = percent + '%';
+        document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+
+        const grid = document.getElementById('daysGrid');
+        grid.innerHTML = '';
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        
+        let offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+        const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+
+        for (let i = 0; i < offset; i++) {
+            grid.innerHTML += `<div class="day-cell empty"></div>`;
         }
 
-        function renderStats(year, month) {
-            const total = getMonthPoints(year, month);
-            const remaining = getRemaining(year, month);
-            const days = getDaysWithPoints(year, month);
-            document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
-            document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
-            document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
-            document.getElementById('daysWithPoints').textContent = days;
-
-            const percent = Math.min(100, (total / LIMIT) * 100);
-            document.getElementById('progressFill').style.width = percent + '%';
-            document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dayPoints = pointsMap.get(dateStr) || 0;
+            const isToday = (dateStr === todayStr) ? 'today' : '';
+            const isOver = ((total + dayPoints) > LIMIT && dayPoints > 0) ? 'over-limit' : '';
+            
+            const cell = document.createElement('div');
+            cell.className = `day-cell ${isToday} ${isOver}`;
+            cell.innerHTML = `<span class="day-number">${d}</span><span class="day-points ${dayPoints===0?'zero':''}">${dayPoints>0 ? dayPoints+' б.' : '—'}</span>`;
+            
+            cell.addEventListener('click', () => {
+                selectedDay = { year: currentYear, month: currentMonth, day: d };
+                const mNames = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
+                document.getElementById('modalDate').textContent = `${d} ${mNames[currentMonth]} ${currentYear}`;
+                document.getElementById('modalOverlay').classList.add('active');
+            });
+            grid.appendChild(cell);
         }
 
-        function renderCalendar(year, month) {
-            const grid = document.getElementById('daysGrid');
-            grid.innerHTML = '';
+        const mNamesFull = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        document.getElementById('monthYear').textContent = `${mNamesFull[currentMonth]} ${currentYear}`;
+    }
 
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const daysInMonth = lastDay.getDate();
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
+        renderAll();
+    });
+    
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
+        renderAll();
+    });
+    
+    document.getElementById('addPointsBtn').addEventListener('click', () => {
+        const t = new Date();
+        let val = parseInt(document.getElementById('pointsInput').value, 10) || 100;
+        addPointsToDay(t.getFullYear(), t.getMonth(), t.getDate(), val);
+    });
 
-            let startWeekday = firstDay.getDay();
-            let offset = (startWeekday === 0) ? 6 : startWeekday - 1;
+    document.getElementById('removePointsBtn').addEventListener('click', () => {
+        const t = new Date();
+        let val = parseInt(document.getElementById('pointsInput').value, 10) || 100;
+        addPointsToDay(t.getFullYear(), t.getMonth(), t.getDate(), -val);
+    });
 
-            const today = new Date();
-            const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    document.getElementById('modalConfirm').addEventListener('click', () => {
+        if (!selectedDay) return;
+        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 100;
+        addPointsToDay(selectedDay.year, selectedDay.month, selectedDay.day, val);
+        document.getElementById('modalOverlay').classList.remove('active');
+    });
 
-            for (let i = 0; i < offset; i++) {
-                const empty = document.createElement('div');
-                empty.className = 'day-cell empty';
-                grid.appendChild(empty);
-            }
+    document.getElementById('modalRemove').addEventListener('click', () => {
+        if (!selectedDay) return;
+        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 100;
+        addPointsToDay(selectedDay.year, selectedDay.month, selectedDay.day, -val);
+        document.getElementById('modalOverlay').classList.remove('active');
+    });
 
-            for (let d = 1; d <= daysInMonth; d++) {
-                const cell = document.createElement('div');
-                cell.className = 'day-cell';
-
-                const dayPoints = getDayPoints(year, month, d);
-                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const isToday = (dateStr === todayStr);
-
-                if (isToday) cell.classList.add('today');
-
-                const dayTotal = getMonthPoints(year, month);
-                const isOverLimit = (dayTotal + dayPoints) > LIMIT;
-                if (isOverLimit && dayPoints > 0) cell.classList.add('over-limit');
-
-                const numberSpan = document.createElement('span');
-                numberSpan.className = 'day-number';
-                numberSpan.textContent = d;
-                cell.appendChild(numberSpan);
-
-                const pointsSpan = document.createElement('span');
-                pointsSpan.className = 'day-points' + (dayPoints === 0 ? ' zero' : '');
-                if (dayPoints > 0) {
-                    pointsSpan.textContent = dayPoints + ' б.';
-                } else {
-                    pointsSpan.textContent = '—';
-                }
-                cell.appendChild(pointsSpan);
-
-                cell.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    selectedDay = { year, month, day: d };
-                    const monthNames = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня', 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'];
-                    document.getElementById('modalDate').textContent = `${d} ${monthNames[month]} ${year}`;
-                    document.getElementById('modalPointsInput').value = 100;
-                    document.getElementById('modalOverlay').classList.add('active');
-                });
-
-                grid.appendChild(cell);
-            }
-
-            const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-            document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
-        }
-
-        function renderAll() {
-            renderStats(currentYear, currentMonth);
-            renderCalendar(currentYear, currentMonth);
-        }
-
-        function init() {
-            loadFromStorage();
-
-            document.getElementById('prevMonth').addEventListener('click', function() {
-                if (currentMonth === 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                } else {
-                    currentMonth--;
-                }
-                renderAll();
-            });
-
-            document.getElementById('nextMonth').addEventListener('click', function() {
-                if (currentMonth === 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                } else {
-                    currentMonth++;
-                }
-                renderAll();
-            });
-
-            document.getElementById('addPointsBtn').addEventListener('click', function() {
-                const today = new Date();
-                const y = today.getFullYear();
-                const m = today.getMonth();
-                const d = today.getDate();
-
-                const input = document.getElementById('pointsInput');
-                let val = parseInt(input.value, 10);
-                if (isNaN(val) || val < 1) val = 100;
-                addPointsToDay(y, m, d, val);
-            });
-
-            document.getElementById('modalConfirm').addEventListener('click', function() {
-                if (!selectedDay) return;
-                const input = document.getElementById('modalPointsInput');
-                let val = parseInt(input.value, 10);
-                if (isNaN(val) || val < 1) val = 100;
-                const { year, month, day } = selectedDay;
-                addPointsToDay(year, month, day, val);
-                document.getElementById('modalOverlay').classList.remove('active');
-                selectedDay = null;
-            });
-
-            document.getElementById('modalCancel').addEventListener('click', function() {
-                document.getElementById('modalOverlay').classList.remove('active');
-                selectedDay = null;
-            });
-
-            document.getElementById('modalOverlay').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                    selectedDay = null;
-                }
-            });
-
-            renderAll();
-        }
-
-        init();
-    })();
+    document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('active'));
 </script>
 </body>
 </html>
