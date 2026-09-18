@@ -19,6 +19,7 @@
             --ozon-pink-glow: rgba(249, 17, 85, 0.25);
             --ozon-yellow: #FFB800;
             --ozon-green: #00C48C;
+            --ozon-green-soft: #E6FAF4;
             --bg-base: #F2F5F9;
             --surface: #FFFFFF;
             --surface-soft: #F7F9FC;
@@ -52,6 +53,7 @@
             --text-muted: #6B7C99;
             --ozon-blue-soft: rgba(0, 91, 255, 0.18);
             --ozon-pink-soft: rgba(249, 17, 85, 0.18);
+            --ozon-green-soft: rgba(0, 196, 140, 0.15);
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
             --shadow-lg: 0 20px 48px -12px rgba(0, 0, 0, 0.6);
@@ -701,6 +703,17 @@
 
         .day-cell.selected .day-number::after { display: none; }
 
+        /* Пульс при добавлении баллов */
+        .day-cell.pulse {
+            animation: cellPulse 0.6s var(--ease-spring);
+        }
+
+        @keyframes cellPulse {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.15); box-shadow: 0 0 0 8px var(--ozon-blue-glow); }
+            100% { transform: scale(1); }
+        }
+
         .view-year {
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
         }
@@ -775,6 +788,11 @@
             color: white; font-size: 24px;
             margin: 0 auto 14px;
             box-shadow: 0 10px 22px -6px rgba(255, 184, 0, 0.5);
+        }
+
+        .modal-icon.info {
+            background: linear-gradient(135deg, var(--ozon-blue), #2B7BFF);
+            box-shadow: 0 10px 22px -6px var(--ozon-blue-glow);
         }
 
         .modal-box h2 {
@@ -852,6 +870,12 @@
         .modal-actions .btn-cancel:hover {
             color: var(--ozon-blue);
             background: var(--ozon-blue-soft);
+        }
+
+        .modal-text {
+            font-size: 14px; color: var(--text-secondary);
+            font-weight: 500; line-height: 1.5;
+            margin-bottom: 20px;
         }
 
         .loading-overlay {
@@ -961,6 +985,7 @@
 </head>
 <body>
 
+<!-- ═══════════ АВТОРИЗАЦИЯ ═══════════ -->
 <div class="card" id="authScreen">
     <div class="loading-overlay hidden" id="authLoader">
         <div class="spinner"></div>
@@ -985,6 +1010,7 @@
     </div>
 </div>
 
+<!-- ═══════════ ОСНОВНОЕ ═══════════ -->
 <div id="mainAppWrapper">
     <div class="topbar card">
         <div class="code-chip" id="copyCodeBtn" title="Скопировать код">
@@ -993,6 +1019,12 @@
             <span id="syncCodeDisplay">—</span>
         </div>
         <div class="topbar-actions">
+            <button class="btn btn-icon" id="exportBtn" title="Экспорт данных">
+                <i class="fas fa-file-export"></i>
+            </button>
+            <button class="btn btn-icon" id="importBtn" title="Импорт данных">
+                <i class="fas fa-file-import"></i>
+            </button>
             <button class="btn btn-icon" id="themeToggle" title="Сменить тему">
                 <i class="fas fa-moon"></i>
             </button>
@@ -1100,6 +1132,7 @@
     </div>
 </div>
 
+<!-- ═══════════ МОДАЛКА ВВОДА БАЛЛОВ ═══════════ -->
 <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
         <div class="modal-icon"><i class="fas fa-star"></i></div>
@@ -1126,6 +1159,22 @@
                 <i class="fas fa-trash"></i> Удалить день
             </button>
             <button class="btn btn-cancel" id="modalCancel">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА ИМПОРТА ═══════════ -->
+<div class="modal-overlay" id="importOverlay">
+    <div class="modal-box">
+        <div class="modal-icon info"><i class="fas fa-file-import"></i></div>
+        <h2>Импорт данных</h2>
+        <p class="modal-text">Выберите JSON-файл с данными. Текущие данные будут заменены.</p>
+        <input type="file" id="importFileInput" accept="application/json,.json" style="display:none;">
+        <div class="modal-actions">
+            <button class="btn btn-primary" id="importPickBtn">
+                <i class="fas fa-folder-open"></i> Выбрать файл
+            </button>
+            <button class="btn btn-cancel" id="importCancel">Отмена</button>
         </div>
     </div>
 </div>
@@ -1216,6 +1265,9 @@
     // onSnapshot применяет снапшот только если serverVersion >= localVersion.
     let localVersion = 0;
 
+    // Флаг первой загрузки — чтобы показать уведомление об обновлении с другого устройства
+    let firstSnapshotLoaded = false;
+
     async function getNextSequentialId() {
         const counterRef = doc(db, 'system', 'counter');
         try {
@@ -1247,6 +1299,8 @@
 
         if (unsubscribe) unsubscribe();
 
+        firstSnapshotLoaded = false;
+
         unsubscribe = onSnapshot(docRef, (docSnap) => {
             document.getElementById('appLoader').classList.add('hidden');
 
@@ -1254,6 +1308,7 @@
                 pointsMap = new Map();
                 ALL_TIME_POINTS = 0;
                 renderAll();
+                firstSnapshotLoaded = true;
                 return;
             }
 
@@ -1263,10 +1318,24 @@
             // Игнорируем устаревшие снапшоты — они не должны перетирать свежие локальные данные
             if (serverVersion < localVersion) return;
 
+            // ⚠️ ПРОВЕРКА ОБНОВЛЕНИЙ КОДА АККАУНТА:
+            // если снапшот новее того, что у нас локально, и это не первая загрузка
+            // и не результат нашего собственного сохранения — значит, данные
+            // изменились на другом устройстве. Показываем уведомление.
+            const isOwnSave = (serverVersion === localVersion);
+            const isInitialLoad = !firstSnapshotLoaded;
+            const isExternalUpdate = !isOwnSave && !isInitialLoad && serverVersion > localVersion;
+
+            if (isExternalUpdate) {
+                toast('Данные обновлены с другого устройства', 'info', 'rotate');
+            }
+
             pointsMap = new Map(Object.entries(data.pointsMap || {}));
             ALL_TIME_POINTS = data.allTimePoints || 0;
             localVersion = serverVersion;
             renderAll();
+
+            firstSnapshotLoaded = true;
         }, (error) => {
             console.error(error);
             document.getElementById('appLoader').classList.add('hidden');
@@ -1322,6 +1391,10 @@
         }
     });
 
+    document.getElementById('loginCodeInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('btnLogin').click();
+    });
+
     document.getElementById('btnLogout').addEventListener('click', () => {
         if (confirm('Выйти из аккаунта?')) {
             if (unsubscribe) unsubscribe();
@@ -1333,6 +1406,81 @@
     document.getElementById('copyCodeBtn').addEventListener('click', () => {
         navigator.clipboard.writeText(MY_SYNC_KEY);
         toast(`Код ${MY_SYNC_KEY} скопирован`, 'success', 'copy');
+    });
+
+    /* ═══════════ ЭКСПОРТ ═══════════ */
+    function exportData() {
+        const data = {
+            version: 1,
+            code: MY_SYNC_KEY,
+            exportedAt: new Date().toISOString(),
+            allTimePoints: ALL_TIME_POINTS,
+            pointsMap: Object.fromEntries(pointsMap)
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ozon-tracker-${MY_SYNC_KEY}-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast('Данные экспортированы', 'success', 'file-export');
+    }
+
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+
+    /* ═══════════ ИМПОРТ ═══════════ */
+    const importOverlay = document.getElementById('importOverlay');
+    const importFileInput = document.getElementById('importFileInput');
+
+    document.getElementById('importBtn').addEventListener('click', () => {
+        importOverlay.classList.add('active');
+    });
+
+    document.getElementById('importPickBtn').addEventListener('click', () => {
+        importFileInput.click();
+    });
+
+    document.getElementById('importCancel').addEventListener('click', () => {
+        importOverlay.classList.remove('active');
+    });
+
+    importOverlay.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('active');
+    });
+
+    importFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            try {
+                const data = JSON.parse(ev.target.result);
+                if (!data.pointsMap || typeof data.pointsMap !== 'object') {
+                    throw new Error('Неверный формат файла');
+                }
+                pointsMap = new Map(Object.entries(data.pointsMap));
+                ALL_TIME_POINTS = data.allTimePoints || 0;
+
+                renderAll();
+                importOverlay.classList.remove('active');
+
+                if (docRef) {
+                    await saveToFirebase();
+                    toast('Данные импортированы и сохранены', 'success', 'file-import');
+                } else {
+                    toast('Данные загружены (войдите для сохранения)', 'info', 'file-import');
+                }
+            } catch (err) {
+                console.error(err);
+                toast('Ошибка чтения файла', 'error', 'triangle-exclamation');
+                importOverlay.classList.remove('active');
+            }
+            importFileInput.value = '';
+        };
+        reader.readAsText(file);
     });
 
     /* ═══════════ ЛОГИКА ═══════════ */
@@ -1388,7 +1536,7 @@
         return total;
     }
 
-    async function modifyPointsDay(year, month, day, amount, isSubtract) {
+    async function modifyPointsDay(year, month, day, amount, isSubtract, animate = true) {
         const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const existing = pointsMap.get(key) || 0;
 
@@ -1415,8 +1563,22 @@
 
         ALL_TIME_POINTS = Math.max(0, ALL_TIME_POINTS + change);
 
-        // Сначала UI — мгновенная реакция, потом сохранение
+        // UI — мгновенная реакция
         renderAll();
+
+        // Анимация «пульс» при добавлении баллов
+        if (animate && change > 0) {
+            requestAnimationFrame(() => {
+                const cell = document.querySelector(`.day-cell[data-date="${key}"]`);
+                if (cell) {
+                    cell.classList.remove('pulse');
+                    void cell.offsetWidth; // reflow, чтобы анимация перезапустилась
+                    cell.classList.add('pulse');
+                    setTimeout(() => cell.classList.remove('pulse'), 700);
+                }
+            });
+        }
+
         await saveToFirebase();
 
         if (change > 0) toast(`+${change}`, 'success', 'plus');
