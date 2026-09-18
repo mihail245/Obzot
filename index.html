@@ -3,272 +3,1006 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ozon Баллы за обзор · Трекер</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Ozon · Баллы за обзоры</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* CSS Переменные для смены тем */
         :root {
-            --bg-gradient: linear-gradient(145deg, #f5f7fc 0%, #e9edf5 100%);
-            --card-bg: rgba(255, 255, 255, 0.7);
-            --panel-bg: rgba(255, 255, 255, 0.5);
-            --border-color: rgba(255, 255, 255, 0.5);
-            --text-main: #0b1b33;
-            --text-muted: #5b6f89;
-            --input-bg: white;
-            --input-border: rgba(0, 0, 0, 0.1);
-            --day-bg: rgba(255, 255, 255, 0.4);
-            --day-hover: rgba(255, 255, 255, 0.9);
-            --modal-bg: white;
-            --btn-light: #f1f4f9;
-            --btn-light-hover: #e2e8f0;
-            --shadow: rgba(0, 20, 40, 0.25);
-            --ripple-color: #0f172a;
+            --ozon-blue: #005BFF;
+            --ozon-blue-hover: #0047CC;
+            --ozon-blue-soft: #E6F0FF;
+            --ozon-blue-glow: rgba(0, 91, 255, 0.25);
+            --ozon-pink: #F91155;
+            --ozon-pink-soft: #FFE6EE;
+            --ozon-pink-glow: rgba(249, 17, 85, 0.25);
+            --ozon-yellow: #FFB800;
+            --ozon-green: #00C48C;
+            --bg-base: #F2F5F9;
+            --surface: #FFFFFF;
+            --surface-soft: #F7F9FC;
+            --surface-hover: #EEF3FA;
+            --border: #E5EAF2;
+            --border-strong: #D5DCE8;
+            --text-primary: #0B1B33;
+            --text-secondary: #5B6F89;
+            --text-muted: #94A3B8;
+            --shadow-sm: 0 1px 3px rgba(11, 27, 51, 0.06), 0 1px 2px rgba(11, 27, 51, 0.04);
+            --shadow-md: 0 8px 24px -6px rgba(11, 27, 51, 0.1);
+            --shadow-lg: 0 20px 48px -12px rgba(0, 91, 255, 0.15);
+            --shadow-blue: 0 10px 24px -8px var(--ozon-blue-glow);
+            --radius-sm: 10px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="dark"] {
-            --bg-gradient: linear-gradient(145deg, #0f172a 0%, #020617 100%);
-            --card-bg: rgba(30, 41, 59, 0.6);
-            --panel-bg: rgba(30, 41, 59, 0.5);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --input-bg: #1e293b;
-            --input-border: rgba(255, 255, 255, 0.1);
-            --day-bg: rgba(30, 41, 59, 0.4);
-            --day-hover: rgba(51, 65, 85, 0.9);
-            --modal-bg: #1e293b;
-            --btn-light: #334155;
-            --btn-light-hover: #475569;
-            --shadow: rgba(0, 0, 0, 0.5);
-            --ripple-color: #f5f7fc;
+            --bg-base: #0B1220;
+            --surface: #131C31;
+            --surface-soft: #1A2542;
+            --surface-hover: #223055;
+            --border: #22314F;
+            --border-strong: #2E3F62;
+            --text-primary: #F1F5FB;
+            --text-secondary: #A8B6CE;
+            --text-muted: #6B7C99;
+            --ozon-blue-soft: rgba(0, 91, 255, 0.18);
+            --ozon-pink-soft: rgba(249, 17, 85, 0.18);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 20px 48px -12px rgba(0, 0, 0, 0.6);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif; }
-        
-        body { 
-            min-height: 100vh; 
-            background: var(--bg-gradient); 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; 
-            color: var(--text-main);
-            overflow-x: hidden;
-            /* Плавность смены фона только после отработки анимации круга */
-            transition: color 0.3s ease; 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-        
-        /* Плавный круг смены темы (Telegram-style) */
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            -webkit-font-smoothing: antialiased;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            transition: background 0.4s var(--ease), color 0.4s var(--ease);
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+            background-size: 28px 28px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ТЕМА: КРУГОВОЙ RIPPLE
+           ═══════════════════════════════════════════════════════ */
         .theme-ripple {
             position: fixed;
             border-radius: 50%;
             pointer-events: none;
-            z-index: 9999;
+            z-index: 9998;
             transform: scale(0);
-            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            transition: transform 0.7s var(--ease), opacity 0.6s ease;
+            will-change: transform, opacity;
         }
 
-        .card { 
-            max-width: 1100px; width: 100%; 
-            background: var(--card-bg); 
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
-            border-radius: 48px; padding: 30px 30px 40px; 
-            box-shadow: 0 25px 50px -10px var(--shadow), inset 0 1px 2px rgba(255, 255, 255, 0.1); 
-            border: 1px solid var(--border-color); 
-            position: relative; 
-            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md);
+            transition: background 0.4s var(--ease), border-color 0.4s var(--ease), box-shadow 0.4s var(--ease);
         }
 
-        /* Экран Авторизации */
-        #authScreen { max-width: 450px; text-align: center; padding: 40px 30px; }
-        #authScreen h1 { font-size: 28px; margin-bottom: 10px; color: var(--text-main); }
-        #authScreen p { color: var(--text-muted); margin-bottom: 30px; font-size: 15px; }
-        .auth-actions { display: flex; flex-direction: column; gap: 15px; }
-        .auth-actions input { width: 100%; padding: 14px 20px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-size: 18px; text-align: center; outline: none; transition: 0.2s; }
-        .auth-actions input:focus { border-color: #005bff; box-shadow: 0 0 0 3px rgba(0, 91, 255, 0.15); }
-        .btn-primary { background: #005bff; color: white; border: none; padding: 14px 20px; border-radius: 20px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; box-shadow: 0 8px 16px -6px rgba(0, 91, 255, 0.4); }
-        .btn-primary:hover { background: #0047cc; transform: translateY(-2px); }
-        .btn-secondary { background: var(--btn-light); color: var(--text-main); border: none; padding: 14px 20px; border-radius: 20px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-secondary:hover { background: var(--btn-light-hover); }
-        .divider { display: flex; align-items: center; color: var(--text-muted); font-size: 14px; margin: 5px 0; }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); margin: 0 10px; }
+        /* ═══════════════════════════════════════════════════════
+           АВТОРИЗАЦИЯ
+           ═══════════════════════════════════════════════════════ */
+        #authScreen {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 32px;
+            text-align: center;
+            position: relative;
+            animation: cardEnter 0.6s var(--ease-spring);
+        }
 
-        /* Верхняя панель */
-        .sync-panel { max-width: 1100px; width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--panel-bg); padding: 12px 20px; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.03); backdrop-filter: blur(10px); transition: 0.3s ease; }
-        .sync-code-display { font-weight: 700; color: #005bff; font-size: 18px; display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 16px; background: rgba(0, 91, 255, 0.08); border-radius: 12px; transition: 0.2s; }
-        .sync-code-display:hover { background: rgba(0, 91, 255, 0.15); }
-        .sync-actions { display: flex; gap: 10px; align-items: center; }
-        .btn-theme { background: transparent; border: none; color: var(--text-main); font-size: 22px; cursor: pointer; transition: 0.2s; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
-        .btn-theme:hover { background: var(--btn-light); }
-        .btn-logout { background: var(--btn-light); border: none; padding: 8px 16px; border-radius: 12px; font-weight: 600; color: #ff6b4a; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        .btn-logout:hover { background: #ffe5e0; }
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
 
-        .loading-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--card-bg); backdrop-filter: blur(8px); border-radius: 48px; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; font-size: 18px; font-weight: 600; color: #005bff; transition: 0.3s; }
-        .loading-overlay.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+        .logo-mark {
+            width: 72px; height: 72px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--ozon-blue) 0%, #2B7BFF 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 32px;
+            box-shadow: var(--shadow-blue);
+            position: relative; overflow: hidden;
+        }
 
-        /* Основной интерфейс */
-        .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { background: #005bff; color: white; width: 48px; height: 48px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 16px -6px rgba(0, 91, 255, 0.3); }
-        h1 { font-weight: 700; font-size: 24px; color: var(--text-main); }
-        .badge-limit { background: #ff6b4a; color: white; padding: 10px 22px; border-radius: 100px; font-weight: 600; font-size: 18px; display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 14px rgba(255, 107, 74, 0.25); transition: 0.3s; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; background: var(--panel-bg); border-radius: 32px; padding: 18px 24px; margin-bottom: 28px; border: 1px solid var(--border-color); transition: 0.3s; }
-        .stat-item { display: flex; flex-direction: column; }
-        .stat-label { font-size: 14px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
-        .edit-icon { cursor: pointer; color: #005bff; opacity: 0.7; transition: 0.2s; font-size: 13px; }
-        .edit-icon:hover { opacity: 1; transform: scale(1.1); }
-        .stat-value { font-size: 26px; font-weight: 700; color: var(--text-main); margin-top: 4px; }
-        .progress-wrap { grid-column: 1 / -1; margin-top: 6px; }
-        .progress-bar-bg { width: 100%; height: 12px; background: rgba(0, 0, 0, 0.1); border-radius: 100px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #005bff, #4d8aff); border-radius: 100px; width: 0%; transition: width 0.3s ease; }
-        .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-main); margin-top: 6px; font-weight: 500; }
-        
-        .calendar-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-        .calendar-nav-center { display: flex; align-items: center; gap: 12px; }
-        .month-year { font-weight: 700; font-size: 22px; color: var(--text-main); transition: 0.2s; }
-        
-        .nav-btn { background: var(--panel-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 44px; height: 44px; border-radius: 30px; font-size: 20px; cursor: pointer; transition: 0.15s; display: flex; justify-content: center; align-items: center;}
-        .nav-btn:hover { background: var(--btn-light); transform: scale(0.96); }
-        .btn-view-toggle { width: auto; padding: 0 16px; border-radius: 20px; font-size: 16px; font-weight: 600; background: rgba(0, 91, 255, 0.08); border-color: transparent; color: #005bff; }
-        .btn-view-toggle:hover { background: rgba(0, 91, 255, 0.15); }
+        .logo-mark::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%);
+            transform: translateX(-100%);
+            animation: shine 3.5s ease-in-out infinite;
+        }
 
-        /* Стили контейнера календаря */
-        .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 600; color: var(--text-muted); font-size: 14px; margin-bottom: 12px; }
-        .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        
-        .day-cell { background: var(--day-bg); border-radius: 20px; padding: 12px 4px; text-align: center; color: var(--text-main); border: 1px solid var(--border-color); transition: all 0.1s ease; cursor: pointer; min-height: 68px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .day-cell:hover { background: var(--day-hover); border-color: #005bff; transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .day-cell.empty { background: transparent; border-color: transparent; cursor: default; opacity: 0.5; box-shadow: none; pointer-events: none;}
-        .day-cell .day-number { font-size: 18px; font-weight: 600; }
-        .day-cell .day-points { font-size: 12px; font-weight: 600; background: rgba(0, 91, 255, 0.1); padding: 3px 8px; border-radius: 40px; margin-top: 4px; color: #005bff; }
-        .day-cell .day-points.zero { color: var(--text-muted); background: transparent; }
-        .day-cell.today { border: 2px solid #005bff; background: rgba(0, 91, 255, 0.05); }
-        .day-cell.over-limit { background: rgba(255, 107, 74, 0.15); border-color: #ff6b4a; }
+        @keyframes shine {
+            0%, 70%, 100% { transform: translateX(-100%); }
+            35% { transform: translateX(100%); }
+        }
 
-        /* Режим Года */
-        .view-year { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .month-block { background: transparent; display: flex; flex-direction: column; }
-        .view-year .month-block { background: var(--panel-bg); padding: 16px; border-radius: 30px; border: 1px solid var(--border-color); }
-        .view-year .month-title { font-weight: 700; text-align: center; margin-bottom: 12px; color: var(--text-main); font-size: 18px; text-transform: capitalize; }
-        .view-year .day-cell { min-height: 44px; padding: 4px 2px; border-radius: 12px; }
-        .view-year .day-cell .day-number { font-size: 14px; }
-        .view-year .day-cell .day-points { font-size: 9px; padding: 1px 4px; }
-        
-        /* Модальное окно тапов по дате */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-overlay.active { display: flex; }
-        .modal-box { background: var(--modal-bg); border-radius: 40px; padding: 32px 40px; max-width: 450px; width: 90%; text-align: center; border: 1px solid var(--border-color); box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
-        .modal-box h2 { font-size: 24px; margin-bottom: 8px; color: var(--text-main); }
-        .modal-box .modal-date { color: var(--text-muted); margin-bottom: 20px; font-weight: 500;}
-        .modal-box input { width: 100%; padding: 14px 20px; border-radius: 20px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 20px; outline: none; transition: 0.2s;}
-        .modal-box input:focus { border-color: #005bff; box-shadow: 0 0 0 3px rgba(0, 91, 255, 0.15); }
-        
-        .modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .modal-actions button { flex: 1; min-width: 120px; padding: 14px 20px; border-radius: 20px; font-weight: 600; border: none; cursor: pointer; transition: 0.15s; font-size: 15px;}
-        .btn-remove { background: rgba(255, 107, 74, 0.15); color: #ff6b4a; }
-        .btn-remove:hover { background: rgba(255, 107, 74, 0.25); transform: translateY(-2px); }
-        .btn-cancel { width: 100%; flex: unset; margin-top: 5px; }
+        .logo-mark.center { margin: 0 auto 20px; }
 
-        #mainAppWrapper { display: none; width: 100%; max-width: 1100px; flex-direction: column; align-items: center; }
+        .title-xl {
+            font-size: 28px; font-weight: 900;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
 
-        @media (max-width: 900px) { .view-year { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 700px) { 
-            .sync-panel { flex-direction: column; gap: 15px; align-items: flex-start; } 
-            .sync-actions { width: 100%; justify-content: space-between;} 
+        .title-xl .accent { color: var(--ozon-blue); }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px; font-weight: 500; line-height: 1.5;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           КНОПКИ
+           ═══════════════════════════════════════════════════════ */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 10px; border: none; cursor: pointer;
+            font-family: inherit; font-weight: 700; font-size: 15px;
+            padding: 15px 22px; border-radius: var(--radius-md);
+            transition: transform 0.2s var(--ease-spring), background 0.2s ease, box-shadow 0.25s ease, color 0.2s ease;
+            position: relative; overflow: hidden;
+            user-select: none; letter-spacing: -0.01em;
+        }
+
+        .btn:active { transform: scale(0.96); }
+
+        .btn-primary {
+            background: var(--ozon-blue); color: white;
+            box-shadow: var(--shadow-blue);
+        }
+
+        .btn-primary:hover {
+            background: var(--ozon-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -8px var(--ozon-blue-glow);
+        }
+
+        .btn-soft {
+            background: var(--surface-soft);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-soft:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--ozon-pink-soft);
+            color: var(--ozon-pink);
+        }
+
+        .btn-danger:hover {
+            background: rgba(249, 17, 85, 0.22);
+            transform: translateY(-2px);
+        }
+
+        .btn-icon {
+            width: 44px; height: 44px;
+            padding: 0; border-radius: 50%;
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            font-size: 16px;
+            position: relative;
+            z-index: 10001;
+        }
+
+        .btn-icon:hover {
+            background: var(--ozon-blue-soft);
+            color: var(--ozon-blue);
+            border-color: var(--ozon-blue);
+            transform: scale(1.08);
+        }
+
+        .btn-icon:active { transform: scale(0.9); }
+
+        /* ═══════════════════════════════════════════════════════
+           ФОРМЫ
+           ═══════════════════════════════════════════════════════ */
+        .input {
+            width: 100%; padding: 15px 20px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border);
+            background: var(--surface-soft);
+            color: var(--text-primary);
+            font-family: inherit; font-size: 16px; font-weight: 600;
+            outline: none; text-align: center;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .input::placeholder { color: var(--text-muted); font-weight: 400; }
+        .input:focus {
+            border-color: var(--ozon-blue);
+            background: var(--surface);
+            box-shadow: 0 0 0 4px var(--ozon-blue-soft);
+        }
+
+        .auth-actions {
+            display: flex; flex-direction: column;
+            gap: 12px; margin-top: 28px;
+        }
+
+        .divider {
+            display: flex; align-items: center; gap: 12px;
+            color: var(--text-muted); font-size: 11px; font-weight: 700;
+            letter-spacing: 0.12em; text-transform: uppercase; margin: 4px 0;
+        }
+
+        .divider::before, .divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--border);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ОСНОВНОЙ КОНТЕЙНЕР
+           ═══════════════════════════════════════════════════════ */
+        #mainAppWrapper {
+            display: none; width: 100%; max-width: 1080px;
+            flex-direction: column; gap: 16px;
+            animation: cardEnter 0.6s var(--ease-spring);
+        }
+
+        #mainAppWrapper.visible { display: flex; }
+
+        .topbar {
+            display: flex; justify-content: space-between;
+            align-items: center; gap: 12px;
+            padding: 12px 16px; border-radius: var(--radius-lg);
+            flex-wrap: wrap;
+        }
+
+        .code-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 16px; border-radius: 100px;
+            background: var(--ozon-blue-soft); color: var(--ozon-blue);
+            font-weight: 800; font-size: 14px; cursor: pointer;
+            transition: transform 0.2s var(--ease-spring), background 0.2s ease;
+            user-select: none;
+        }
+
+        .code-chip:hover {
+            transform: translateY(-2px);
+            background: rgba(0, 91, 255, 0.18);
+        }
+
+        .code-chip:active { transform: scale(0.96); }
+
+        .topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+        .logout-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 16px; border-radius: 100px;
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            color: var(--ozon-pink); font-weight: 700; font-size: 13px;
+            cursor: pointer; transition: all 0.2s ease; font-family: inherit;
+        }
+
+        .logout-btn:hover {
+            background: var(--ozon-pink-soft);
+            border-color: var(--ozon-pink);
+            transform: translateY(-2px);
+        }
+
+        #app {
+            padding: 28px;
+            position: relative; overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ЗАГОЛОВОК
+           ═══════════════════════════════════════════════════════ */
+        .app-header {
+            display: flex; flex-wrap: wrap; justify-content: space-between;
+            align-items: center; gap: 14px; margin-bottom: 22px;
+        }
+
+        .app-title { display: flex; align-items: center; gap: 12px; }
+
+        .app-title h1 {
+            font-size: 22px; font-weight: 900;
+            letter-spacing: -0.03em; line-height: 1.1;
+        }
+
+        .app-title .sub {
+            font-size: 12px; color: var(--text-muted);
+            font-weight: 600; margin-top: 2px;
+        }
+
+        .limit-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 18px; border-radius: 100px;
+            background: linear-gradient(135deg, var(--ozon-blue), #2B7BFF);
+            color: white; font-weight: 800; font-size: 14px;
+            box-shadow: var(--shadow-blue);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           СТАТИСТИКА
+           ═══════════════════════════════════════════════════════ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            transition: transform 0.25s var(--ease-spring), background 0.2s ease, border-color 0.2s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background: var(--surface);
+            border-color: var(--ozon-blue);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-label {
+            font-size: 11px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.06em;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 6px; margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px; font-weight: 900;
+            letter-spacing: -0.03em; color: var(--text-primary);
+            font-variant-numeric: tabular-nums; line-height: 1.1;
+        }
+
+        .stat-value.blue { color: var(--ozon-blue); }
+        .stat-value.green { color: var(--ozon-green); }
+
+        .edit-btn {
+            width: 22px; height: 22px; border-radius: 6px;
+            border: none; background: transparent;
+            color: var(--ozon-blue); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .edit-btn:hover {
+            background: var(--ozon-blue-soft);
+            transform: scale(1.15);
+        }
+
+        .progress-container {
+            grid-column: 1 / -1;
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+        }
+
+        .progress-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 10px;
+            font-size: 12px; font-weight: 700;
+            color: var(--text-secondary); letter-spacing: 0.02em;
+        }
+
+        .progress-percent {
+            font-size: 18px; font-weight: 900;
+            color: var(--ozon-blue); letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .progress-track {
+            height: 10px; background: var(--border);
+            border-radius: 100px; overflow: hidden; position: relative;
+        }
+
+        .progress-fill {
+            height: 100%; border-radius: 100px;
+            background: linear-gradient(90deg, var(--ozon-blue), #2B7BFF);
+            transition: width 0.7s var(--ease);
+            position: relative; overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           НАВИГАЦИЯ
+           ═══════════════════════════════════════════════════════ */
+        .calendar-nav {
+            display: flex; justify-content: space-between;
+            align-items: center; gap: 10px;
+            margin-bottom: 16px; flex-wrap: wrap;
+        }
+
+        .calendar-nav-center {
+            display: flex; align-items: center; gap: 10px;
+            flex: 1; justify-content: center;
+        }
+
+        .month-year {
+            font-size: 20px; font-weight: 900;
+            letter-spacing: -0.03em; color: var(--text-primary);
+            min-width: 160px; text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .view-toggle {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 16px; border-radius: 100px;
+            background: var(--ozon-blue-soft);
+            border: 1px solid transparent;
+            color: var(--ozon-blue); font-weight: 800; font-size: 13px;
+            cursor: pointer; transition: all 0.2s var(--ease-spring);
+            font-family: inherit;
+        }
+
+        .view-toggle:hover {
+            transform: translateY(-2px);
+            background: rgba(0, 91, 255, 0.18);
+            box-shadow: var(--shadow-blue);
+        }
+
+        .view-toggle:active { transform: scale(0.95); }
+
+        /* ═══════════════════════════════════════════════════════
+           КАЛЕНДАРЬ
+           ═══════════════════════════════════════════════════════ */
+        #calendarContainer {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #calendarContainer.fade-out {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .weekdays {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 8px; margin-bottom: 8px;
+            max-width: 720px; margin-left: auto; margin-right: auto;
+        }
+
+        .weekday {
+            text-align: center; font-size: 12px; font-weight: 800;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: 0.08em; padding: 6px 0;
+        }
+
+        .days-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr);
+            gap: 8px; max-width: 720px; margin: 0 auto;
+        }
+
+        .day-cell {
+            height: 84px; border-radius: var(--radius-md);
+            background: var(--surface-soft);
+            border: 1.5px solid transparent;
+            color: var(--text-primary); cursor: pointer;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 6px; font-weight: 700;
+            position: relative; overflow: hidden;
+            transition: transform 0.2s var(--ease-spring), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            animation: cellEnter 0.35s var(--ease-spring) backwards;
+            animation-delay: calc(var(--i, 0) * 10ms);
+        }
+
+        @keyframes cellEnter {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .day-cell:hover {
+            background: var(--surface);
+            border-color: var(--ozon-blue);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: var(--shadow-blue);
+        }
+
+        .day-cell:active { transform: scale(0.92); }
+
+        .day-cell.empty {
+            background: transparent; border-color: transparent;
+            cursor: default; pointer-events: none; opacity: 0;
+        }
+
+        .day-number {
+            font-size: 18px; line-height: 1; font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            position: relative; z-index: 1; color: var(--text-primary);
+        }
+
+        .day-points {
+            font-size: 13px; font-weight: 800;
+            padding: 3px 12px; border-radius: 100px;
+            background: var(--ozon-blue); color: white;
+            line-height: 1.35; position: relative; z-index: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em; min-width: 42px; text-align: center;
+            box-shadow: 0 2px 6px var(--ozon-blue-glow);
+        }
+
+        .day-points.zero {
+            background: transparent; color: var(--text-muted);
+            font-weight: 600; box-shadow: none; font-size: 12px;
+        }
+
+        .day-cell.today {
+            border-color: var(--ozon-pink);
+            border-width: 2px;
+            background: var(--ozon-pink-soft);
+        }
+
+        .day-cell.today .day-number::after {
+            content: ''; position: absolute;
+            top: -3px; right: -8px;
+            width: 7px; height: 7px;
+            background: var(--ozon-pink); border-radius: 50%;
+            animation: pulseDot 1.6s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 var(--ozon-pink-glow); }
+            50% { transform: scale(1.2); opacity: 0.85; box-shadow: 0 0 0 6px transparent; }
+        }
+
+        .day-cell.over-limit {
+            background: var(--ozon-pink-soft);
+            border-color: var(--ozon-pink);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ГОДОВОЙ РЕЖИМ
+           ═══════════════════════════════════════════════════════ */
+        .view-year {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+        }
+
+        .month-block {
+            background: var(--surface-soft);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 12px;
+            transition: transform 0.25s var(--ease-spring), box-shadow 0.2s ease, background 0.2s ease;
+            animation: cellEnter 0.4s var(--ease-spring) backwards;
+            animation-delay: calc(var(--i, 0) * 35ms);
+        }
+
+        .month-block:hover {
+            transform: translateY(-3px);
+            background: var(--surface);
+            box-shadow: var(--shadow-md);
+            border-color: var(--ozon-blue);
+        }
+
+        .month-title {
+            font-size: 14px; font-weight: 900;
+            text-align: center; margin-bottom: 10px;
+            color: var(--text-primary);
+            text-transform: capitalize; letter-spacing: -0.01em;
+        }
+
+        .view-year .weekdays { gap: 3px; margin-bottom: 5px; max-width: none; }
+        .view-year .weekday { font-size: 9px; padding: 2px 0; letter-spacing: 0.04em; }
+        .view-year .days-grid { gap: 3px; max-width: none; }
+        .view-year .day-cell { height: auto; aspect-ratio: 1; border-radius: 7px; gap: 1px; }
+        .view-year .day-number { font-size: 11px; }
+        .view-year .day-points { font-size: 8px; padding: 1px 4px; min-width: 0; box-shadow: none; }
+        .view-year .day-points.zero { font-size: 8px; }
+        .view-year .day-cell.today .day-number::after { display: none; }
+
+        /* ═══════════════════════════════════════════════════════
+           МОДАЛКА
+           ═══════════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(11, 27, 51, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px; z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-box {
+            width: 100%; max-width: 420px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 28px; text-align: center;
+            box-shadow: var(--shadow-lg);
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+            transition: transform 0.35s var(--ease-spring), opacity 0.25s ease;
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .modal-icon {
+            width: 56px; height: 56px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, var(--ozon-yellow), #FF9800);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px;
+            margin: 0 auto 14px;
+            box-shadow: 0 10px 22px -6px rgba(255, 184, 0, 0.5);
+        }
+
+        .modal-box h2 {
+            font-size: 20px; font-weight: 900;
+            letter-spacing: -0.03em; margin-bottom: 4px;
+        }
+
+        .modal-date {
+            font-size: 13px; color: var(--text-muted);
+            font-weight: 600; margin-bottom: 18px;
+        }
+
+        .modal-input {
+            font-size: 26px; font-weight: 900;
+            padding: 16px; border-radius: var(--radius-lg);
+            text-align: center; font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+
+        .quick-btns {
+            display: flex; gap: 6px;
+            justify-content: center; flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .quick-btn {
+            padding: 8px 14px; border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--surface-soft);
+            color: var(--ozon-blue);
+            font-family: inherit; font-weight: 800; font-size: 13px;
+            cursor: pointer; transition: all 0.2s var(--ease-spring);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .quick-btn:hover {
+            background: var(--ozon-blue); color: white;
+            border-color: var(--ozon-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-blue);
+        }
+
+        .quick-btn:active { transform: scale(0.92); }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px; margin-top: 20px;
+        }
+
+        .modal-actions .btn { width: 100%; padding: 14px; font-size: 14px; }
+
+        .modal-actions .btn-cancel {
+            grid-column: 1 / -1;
+            background: transparent; color: var(--text-muted);
+            padding: 10px; font-size: 13px;
+        }
+
+        .modal-actions .btn-cancel:hover {
+            color: var(--ozon-blue);
+            background: var(--ozon-blue-soft);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ЗАГРУЗЧИК
+           ═══════════════════════════════════════════════════════ */
+        .loading-overlay {
+            position: absolute; inset: 0;
+            background: var(--surface);
+            border-radius: inherit;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 12px; z-index: 100;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+        }
+
+        .loading-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 3px solid var(--ozon-blue-soft);
+            border-top-color: var(--ozon-blue);
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-size: 13px; font-weight: 800;
+            color: var(--ozon-blue); letter-spacing: 0.02em;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           ТОСТЫ
+           ═══════════════════════════════════════════════════════ */
+        .toast-container {
+            position: fixed; bottom: 24px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000; display: flex; flex-direction: column;
+            gap: 8px; pointer-events: none; align-items: center;
+        }
+
+        .toast {
+            padding: 12px 20px; border-radius: 100px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            box-shadow: var(--shadow-md);
+            font-weight: 700; font-size: 14px;
+            color: var(--text-primary);
+            display: flex; align-items: center; gap: 10px;
+            animation: toastIn 0.35s var(--ease-spring);
+            pointer-events: auto; letter-spacing: -0.01em;
+        }
+
+        .toast.success { border-color: var(--ozon-green); color: var(--ozon-green); }
+        .toast.error { border-color: var(--ozon-pink); color: var(--ozon-pink); }
+        .toast.info { border-color: var(--ozon-blue); color: var(--ozon-blue); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           АДАПТИВ
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 1000px) {
+            .view-year { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 780px) {
+            .weekdays, .days-grid { max-width: none; }
+        }
+
+        @media (max-width: 700px) {
+            body { padding: 14px 10px; }
+            #app { padding: 20px 14px; border-radius: var(--radius-lg); }
+            #authScreen { padding: 32px 22px; border-radius: var(--radius-lg); }
+            .view-year { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+            .stat-card { padding: 12px; border-radius: var(--radius-md); }
+            .stat-value { font-size: 20px; }
+            .app-title h1 { font-size: 18px; }
+            .app-title .logo-mark { width: 48px !important; height: 48px !important; font-size: 22px !important; }
+            .month-year { font-size: 17px; min-width: auto; }
+            .topbar { padding: 10px 12px; gap: 8px; }
+            .code-chip { font-size: 12px; padding: 6px 12px; }
+            .logout-btn { font-size: 12px; padding: 8px 12px; }
+            .logout-btn span { display: none; }
+            .modal-box { padding: 22px 18px; }
+            .days-grid { gap: 5px; }
+            .day-cell { height: 68px; gap: 4px; }
+            .day-number { font-size: 15px; }
+            .day-points { font-size: 11px; padding: 2px 8px; min-width: 34px; }
+            .day-points.zero { font-size: 10px; }
+            .btn-icon { width: 40px; height: 40px; font-size: 14px; }
+            .calendar-nav-center { flex-direction: column; gap: 6px; }
+            .limit-badge { font-size: 12px; padding: 8px 14px; }
+            .title-xl { font-size: 24px; }
+        }
+
+        @media (max-width: 480px) {
+            .day-cell { height: 58px; }
+            .day-number { font-size: 14px; }
+            .day-points { font-size: 10px; padding: 1px 6px; min-width: 28px; }
+        }
+
+        @media (max-width: 420px) {
             .view-year { grid-template-columns: 1fr; }
-            .modal-actions button { flex: unset; width: 100%; }
+            .app-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
 
-<!-- Экран авторизации -->
+<!-- ═══════════ АВТОРИЗАЦИЯ ═══════════ -->
 <div class="card" id="authScreen">
-    <div class="loading-overlay hidden" id="authLoader"><i class="fas fa-circle-notch fa-spin" style="font-size: 30px;"></i><div class="loading-text" style="margin-top:10px;">Проверка...</div></div>
-    <div class="logo-icon" style="margin: 0 auto 20px;"><i class="fas fa-star"></i></div>
-    <h1>Ozon Трекер</h1>
-    <p>Умный учет баллов за отзывы</p>
-    
+    <div class="loading-overlay hidden" id="authLoader">
+        <div class="spinner"></div>
+        <div class="loading-text">Проверка...</div>
+    </div>
+
+    <div class="logo-mark center"><i class="fas fa-star"></i></div>
+    <h1 class="title-xl">Ozon <span class="accent">Трекер</span></h1>
+    <p class="subtitle">Учёт баллов за отзывы</p>
+
     <div class="auth-actions">
-        <button class="btn-primary" id="btnCreateAccount"><i class="fas fa-user-plus"></i> Создать новый аккаунт</button>
-        <div class="divider">ИЛИ</div>
-        <input type="number" id="loginCodeInput" placeholder="Введите код (Напр: 15)">
-        <button class="btn-secondary" id="btnLogin"><i class="fas fa-sign-in-alt"></i> Войти по коду</button>
+        <button class="btn btn-primary" id="btnCreateAccount">
+            <i class="fas fa-user-plus"></i> Создать аккаунт
+        </button>
+
+        <div class="divider">или</div>
+
+        <input type="number" class="input" id="loginCodeInput" placeholder="Введите код" inputmode="numeric">
+        <button class="btn btn-soft" id="btnLogin">
+            <i class="fas fa-arrow-right-to-bracket"></i> Войти по коду
+        </button>
     </div>
 </div>
 
-<!-- Основное приложение -->
+<!-- ═══════════ ОСНОВНОЕ ═══════════ -->
 <div id="mainAppWrapper">
-    <div class="sync-panel">
-        <div class="sync-code-display" id="copyCodeBtn" title="Нажмите, чтобы скопировать">
-            <i class="fas fa-id-badge"></i> Код: &nbsp;<span id="syncCodeDisplay">...</span>
+    <div class="topbar card">
+        <div class="code-chip" id="copyCodeBtn" title="Скопировать код">
+            <i class="fas fa-id-badge"></i>
+            <span>Код:</span>
+            <span id="syncCodeDisplay">—</span>
         </div>
-        <div class="sync-actions">
-            <button class="btn-theme" id="themeToggle" title="Сменить тему"><i class="fas fa-moon"></i></button>
-            <button class="btn-logout" id="btnLogout"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+        <div class="topbar-actions">
+            <button class="btn btn-icon" id="themeToggle" title="Сменить тему">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="logout-btn" id="btnLogout">
+                <i class="fas fa-arrow-right-from-bracket"></i>
+                <span>Выйти</span>
+            </button>
         </div>
     </div>
 
     <div class="card" id="app">
         <div class="loading-overlay" id="appLoader">
-            <i class="fas fa-circle-notch fa-spin" style="font-size: 30px;"></i>
-            <div class="loading-text" style="margin-top: 12px;">Синхронизация...</div>
+            <div class="spinner"></div>
+            <div class="loading-text">Синхронизация...</div>
         </div>
 
-        <div class="header">
-            <div class="header-left">
-                <div class="logo-icon"><i class="fas fa-star"></i></div>
-                <h1>Баллы за обзор</h1>
+        <div class="app-header">
+            <div class="app-title">
+                <div class="logo-mark" style="width:52px;height:52px;font-size:24px;border-radius:16px;">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div>
+                    <h1>Баллы за обзор</h1>
+                    <div class="sub">Ozon · отзывы</div>
+                </div>
             </div>
-            <div class="badge-limit"><i class="fas fa-gem"></i> <span id="topLimitDisplay">40 000 / месяц</span></div>
+            <div class="limit-badge">
+                <i class="fas fa-gem"></i>
+                <span id="topLimitDisplay">40 000 / месяц</span>
+            </div>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-item">
-                <span class="stat-label">За всё время <i class="fas fa-pen edit-icon" id="editAllTimeBtn" title="Изменить"></i></span>
-                <span class="stat-value" id="totalAllTime">0</span>
-            </div>
-            <div class="stat-item"><span class="stat-label" id="statLabelMonthYear">За месяц</span><span class="stat-value" id="totalMonthPoints">0</span></div>
-            <div class="stat-item"><span class="stat-label" id="statLabelRemaining">Остаток на месяц</span><span class="stat-value" id="remainingPoints">40 000</span></div>
-            <div class="stat-item"><span class="stat-label">Дней с баллами</span><span class="stat-value" id="daysWithPoints">0</span></div>
-            <div class="progress-wrap">
-                <div class="progress-bar-bg"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-                <div class="progress-label"><span>0</span><span id="progressPercent">0%</span><span id="limitDisplay">40 000</span></div>
-            </div>
-        </div>
-
-        <div class="calendar-section">
-            <div class="calendar-nav">
-                <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
-                <div class="calendar-nav-center">
-                    <span class="month-year" id="monthYear">...</span>
-                    <button class="nav-btn btn-view-toggle" id="toggleViewBtn" title="Развернуть год">
-                        <i class="fas fa-expand-arrows-alt" style="margin-right: 6px;"></i> Год
+            <div class="stat-card">
+                <div class="stat-label">
+                    <span>Всего</span>
+                    <button class="edit-btn" id="editAllTimeBtn" title="Изменить">
+                        <i class="fas fa-pen"></i>
                     </button>
                 </div>
-                <button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                <div class="stat-value" id="totalAllTime">0</div>
             </div>
-            
-            <div id="calendarContainer" class="view-month">
-                <!-- Сетка календаря генерируется через JS -->
+            <div class="stat-card">
+                <div class="stat-label"><span id="statLabelMonthYear">За месяц</span></div>
+                <div class="stat-value blue" id="totalMonthPoints">0</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-label"><span id="statLabelRemaining">Остаток</span></div>
+                <div class="stat-value green" id="remainingPoints">40 000</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label"><span>Дней с баллами</span></div>
+                <div class="stat-value" id="daysWithPoints">0</div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span>Прогресс</span>
+                    <span class="progress-percent" id="progressPercent">0%</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
+                <div class="progress-header" style="margin-top:8px;margin-bottom:0;">
+                    <span id="progressLeftLabel">0</span>
+                    <span id="progressRightLabel">40 000</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-nav">
+            <button class="btn btn-icon" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+            <div class="calendar-nav-center">
+                <span class="month-year" id="monthYear">—</span>
+                <button class="view-toggle" id="toggleViewBtn">
+                    <i class="fas fa-expand"></i> Год
+                </button>
+            </div>
+            <button class="btn btn-icon" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <div id="calendarContainer" class="view-month"></div>
+    </div>
+</div>
+
+<!-- ═══════════ МОДАЛКА ═══════════ -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-icon"><i class="fas fa-star"></i></div>
+        <h2>Баллы за день</h2>
+        <div class="modal-date" id="modalDate">—</div>
+
+        <input type="number" class="input modal-input" id="modalPointsInput" placeholder="0" min="1" inputmode="numeric">
+
+        <div class="quick-btns">
+            <button class="quick-btn" data-val="50">+50</button>
+            <button class="quick-btn" data-val="100">+100</button>
+            <button class="quick-btn" data-val="200">+200</button>
+            <button class="quick-btn" data-val="500">+500</button>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-primary" id="modalConfirm">
+                <i class="fas fa-plus"></i> Добавить
+            </button>
+            <button class="btn btn-danger" id="modalRemove">
+                <i class="fas fa-minus"></i> Удалить
+            </button>
+            <button class="btn btn-cancel" id="modalCancel">Отмена</button>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно управления баллами -->
-<div class="modal-overlay" id="modalOverlay">
-    <div class="modal-box">
-        <h2><i class="fas fa-star" style="color: #ffb800;"></i> Баллы за день</h2>
-        <div class="modal-date" id="modalDate">...</div>
-        
-        <input type="number" id="modalPointsInput" placeholder="Кол-во баллов (напр: 150)" min="1">
-        
-        <div class="modal-actions">
-            <button class="btn-primary" id="modalConfirm"><i class="fas fa-plus"></i> Добавить</button>
-            <button class="btn-remove" id="modalRemove"><i class="fas fa-minus"></i> Удалить</button>
-            <button class="btn-secondary btn-cancel" id="modalCancel">Отмена</button>
-        </div>
-    </div>
-</div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
@@ -286,7 +1020,26 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- УПРАВЛЕНИЕ ТЕМАМИ (Telegram Круговая Анимация) ---
+    /* ═══════════════════════════════════════════════════════
+       ТОСТЫ
+       ═══════════════════════════════════════════════════════ */
+    function toast(message, type = 'info', icon = 'info-circle') {
+        const container = document.getElementById('toastContainer');
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        el.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+        container.appendChild(el);
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            setTimeout(() => el.remove(), 300);
+        }, 2400);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ТЕМА — КРУГОВОЙ RIPPLE
+       ═══════════════════════════════════════════════════════ */
     const savedTheme = localStorage.getItem('ozon_theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
@@ -299,43 +1052,39 @@
     document.getElementById('themeToggle').addEventListener('click', function(e) {
         const isDark = document.body.getAttribute('data-theme') === 'dark';
         const targetTheme = isDark ? 'light' : 'dark';
-        
+
         const ripple = document.createElement('div');
         ripple.className = 'theme-ripple';
-        // Цвет круга соответствует фону будущей темы
-        ripple.style.background = isDark ? '#f5f7fc' : '#0f172a'; 
-        
-        const rect = e.target.getBoundingClientRect();
-        const x = e.clientX || rect.left + rect.width / 2;
-        const y = e.clientY || rect.top + rect.height / 2;
-        
+        ripple.style.background = isDark ? '#F2F5F9' : '#0B1220';
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+
         const maxW = Math.max(x, window.innerWidth - x);
         const maxH = Math.max(y, window.innerHeight - y);
-        const radius = Math.sqrt(maxW*maxW + maxH*maxH);
-        
+        const radius = Math.sqrt(maxW * maxW + maxH * maxH);
+
         ripple.style.width = ripple.style.height = `${radius * 2}px`;
         ripple.style.left = `${x - radius}px`;
         ripple.style.top = `${y - radius}px`;
-        
+
         document.body.appendChild(ripple);
-        
-        // Принудительный рефлоу для запуска анимации
-        void ripple.offsetWidth;
-        ripple.style.transform = 'scale(1)';
-        
-        // Переключаем тему, когда круг заполняет экран
+
+        requestAnimationFrame(() => ripple.style.transform = 'scale(1)');
+
         setTimeout(() => {
             document.body.setAttribute('data-theme', targetTheme);
             localStorage.setItem('ozon_theme', targetTheme);
             updateThemeIcon(targetTheme);
-            
-            // Плавно растворяем круг, открывая уже измененный интерфейс
             ripple.style.opacity = '0';
-            setTimeout(() => ripple.remove(), 500);
-        }, 700); 
+            setTimeout(() => ripple.remove(), 600);
+        }, 500);
     });
 
-    // --- АВТОРИЗАЦИЯ ---
+    /* ═══════════════════════════════════════════════════════
+       АВТОРИЗАЦИЯ
+       ═══════════════════════════════════════════════════════ */
     const authScreen = document.getElementById('authScreen');
     const mainAppWrapper = document.getElementById('mainAppWrapper');
     const authLoader = document.getElementById('authLoader');
@@ -344,7 +1093,7 @@
     async function getNextSequentialId() {
         const counterRef = doc(db, 'system', 'counter');
         try {
-            const newId = await runTransaction(db, async (transaction) => {
+            return String(await runTransaction(db, async (transaction) => {
                 const counterDoc = await transaction.get(counterRef);
                 if (!counterDoc.exists()) {
                     transaction.set(counterRef, { lastId: 1 });
@@ -353,10 +1102,10 @@
                 const newLastId = counterDoc.data().lastId + 1;
                 transaction.update(counterRef, { lastId: newLastId });
                 return newLastId;
-            });
-            return String(newId);
+            }));
         } catch (error) {
-            alert("Ошибка сети. Проверьте подключение."); return "ERROR";
+            toast('Ошибка сети', 'error', 'wifi');
+            return "ERROR";
         }
     }
 
@@ -364,11 +1113,11 @@
         MY_SYNC_KEY = key;
         localStorage.setItem('ozon_sync_key', key);
         authScreen.style.display = 'none';
-        mainAppWrapper.style.display = 'flex';
+        mainAppWrapper.classList.add('visible');
         document.getElementById('syncCodeDisplay').innerText = key;
         docRef = doc(db, "users", key);
 
-        if(unsubscribe) unsubscribe();
+        if (unsubscribe) unsubscribe();
         unsubscribe = onSnapshot(docRef, (docSnap) => {
             document.getElementById('appLoader').classList.add('hidden');
             if (docSnap.exists()) {
@@ -376,7 +1125,8 @@
                 pointsMap = new Map(Object.entries(data.pointsMap || {}));
                 ALL_TIME_POINTS = data.allTimePoints || 0;
             } else {
-                pointsMap = new Map(); ALL_TIME_POINTS = 0;
+                pointsMap = new Map();
+                ALL_TIME_POINTS = 0;
             }
             renderAll();
         });
@@ -402,78 +1152,108 @@
             await setDoc(doc(db, "users", newId), { pointsMap: {}, allTimePoints: 0 });
             authLoader.classList.add('hidden');
             startMainApp(newId);
+            toast(`Код аккаунта: ${newId}`, 'success', 'check-circle');
         } else authLoader.classList.add('hidden');
     });
 
     document.getElementById('btnLogin').addEventListener('click', async () => {
         const code = document.getElementById('loginCodeInput').value.trim();
-        if (!code) return alert("Пожалуйста, введите код");
+        if (!code) return toast('Введите код', 'error', 'exclamation-circle');
         authLoader.classList.remove('hidden');
         try {
             const docSnap = await getDoc(doc(db, "users", code));
-            if (docSnap.exists()) { authLoader.classList.add('hidden'); startMainApp(code); }
-            else { authLoader.classList.add('hidden'); alert("Аккаунт с таким кодом не найден!"); }
-        } catch(e) { authLoader.classList.add('hidden'); alert("Ошибка при поиске аккаунта."); }
+            if (docSnap.exists()) {
+                authLoader.classList.add('hidden');
+                startMainApp(code);
+                toast('Добро пожаловать!', 'success', 'hand-wave');
+            } else {
+                authLoader.classList.add('hidden');
+                toast('Аккаунт не найден', 'error', 'user-slash');
+            }
+        } catch(e) {
+            authLoader.classList.add('hidden');
+            toast('Ошибка подключения', 'error', 'wifi');
+        }
     });
 
     document.getElementById('btnLogout').addEventListener('click', () => {
-        if(confirm('Выйти из аккаунта?')) { localStorage.removeItem('ozon_sync_key'); location.reload(); }
+        if (confirm('Выйти из аккаунта?')) {
+            localStorage.removeItem('ozon_sync_key');
+            location.reload();
+        }
     });
 
     document.getElementById('copyCodeBtn').addEventListener('click', () => {
-        navigator.clipboard.writeText(MY_SYNC_KEY); alert('Код аккаунта скопирован: ' + MY_SYNC_KEY);
+        navigator.clipboard.writeText(MY_SYNC_KEY);
+        toast(`Код ${MY_SYNC_KEY} скопирован`, 'success', 'copy');
     });
 
-    // --- ЛОГИКА ТРЕКЕРА И КАЛЕНДАРЯ ---
+    /* ═══════════════════════════════════════════════════════
+       ЛОГИКА
+       ═══════════════════════════════════════════════════════ */
     const LIMIT = 40000;
     let ALL_TIME_POINTS = 0, pointsMap = new Map();
-    let currentDate = new Date(), currentYear = currentDate.getFullYear(), currentMonth = currentDate.getMonth();
-    
-    // Новая переменная: режим просмотра ('month' или 'year')
-    let calendarView = 'month'; 
+    let currentDate = new Date();
+    let currentYear = currentDate.getFullYear();
+    let currentMonth = currentDate.getMonth();
+    let calendarView = 'month';
     let selectedDay = null;
 
     document.getElementById('editAllTimeBtn').addEventListener('click', () => {
         const val = prompt('Введите количество баллов за всё время:', ALL_TIME_POINTS);
-        if (val !== null && !isNaN(parseInt(val, 10))) { ALL_TIME_POINTS = parseInt(val, 10); saveToFirebase(); }
+        if (val !== null && !isNaN(parseInt(val, 10))) {
+            ALL_TIME_POINTS = parseInt(val, 10);
+            saveToFirebase();
+            renderAll();
+            toast('Значение обновлено', 'success', 'check');
+        }
     });
 
     async function saveToFirebase() {
-        if(!docRef) return;
-        await setDoc(docRef, { pointsMap: Object.fromEntries(pointsMap), allTimePoints: ALL_TIME_POINTS }, { merge: true });
+        if (!docRef) return;
+        await setDoc(docRef, {
+            pointsMap: Object.fromEntries(pointsMap),
+            allTimePoints: ALL_TIME_POINTS
+        }, { merge: true });
     }
 
     function getMonthPoints(year, month) {
-        let total = 0, prefix = `${year}-${String(month+1).padStart(2,'0')}`;
-        for (const [key, val] of pointsMap) { if (key.startsWith(prefix)) total += val; }
+        let total = 0;
+        const prefix = `${year}-${String(month+1).padStart(2,'0')}`;
+        for (const [key, val] of pointsMap) if (key.startsWith(prefix)) total += val;
         return total;
     }
 
     function modifyPointsDay(year, month, day, amount, isSubtract) {
         const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const existing = pointsMap.get(key) || 0;
-        
+
         let change = isSubtract ? -amount : amount;
-        if (change < 0 && Math.abs(change) > existing) change = -existing; 
+        if (change < 0 && Math.abs(change) > existing) change = -existing;
 
         if (change > 0 && (getMonthPoints(year, month) + change > LIMIT)) {
-            alert(`Лимит ${LIMIT} баллов на месяц превышен!`); return false;
+            toast(`Лимит. Осталось: ${LIMIT - getMonthPoints(year, month)}`, 'error', 'triangle-exclamation');
+            return false;
         }
-        
+
         const newTotal = existing + change;
-        if (newTotal <= 0) pointsMap.delete(key); else pointsMap.set(key, newTotal);
-        
+        if (newTotal <= 0) pointsMap.delete(key);
+        else pointsMap.set(key, newTotal);
+
         ALL_TIME_POINTS = Math.max(0, ALL_TIME_POINTS + change);
         saveToFirebase();
+
+        if (change > 0) toast(`+${change}`, 'success', 'plus');
+        else if (change < 0) toast(`${change}`, 'info', 'minus');
         return true;
     }
 
-    // Генерация одного блока месяца (используется и для одиночного просмотра, и для годового)
-    function createMonthBlock(year, month, isYearView) {
+    function createMonthBlock(year, month, isYearView, index = 0) {
         const block = document.createElement('div');
-        block.className = 'month-block';
-
         if (isYearView) {
+            block.className = 'month-block';
+            block.style.setProperty('--i', index);
+
             const title = document.createElement('div');
             title.className = 'month-title';
             const mNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
@@ -483,143 +1263,193 @@
 
         const weekdays = document.createElement('div');
         weekdays.className = 'weekdays';
-        weekdays.innerHTML = '<span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>';
+        weekdays.innerHTML = '<div class="weekday">Пн</div><div class="weekday">Вт</div><div class="weekday">Ср</div><div class="weekday">Чт</div><div class="weekday">Пт</div><div class="weekday">Сб</div><div class="weekday">Вс</div>';
         block.appendChild(weekdays);
 
         const grid = document.createElement('div');
         grid.className = 'days-grid';
-        
-        const firstDay = new Date(year, month, 1), lastDay = new Date(year, month + 1, 0);
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
         let offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-        const todayStr = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}-${String(new Date().getDate()).padStart(2,'0')}`;
+
+        const todayObj = new Date();
+        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth()+1).padStart(2,'0')}-${String(todayObj.getDate()).padStart(2,'0')}`;
         const monthTotal = getMonthPoints(year, month);
 
-        for (let i = 0; i < offset; i++) { grid.innerHTML += `<div class="day-cell empty"></div>`; }
+        for (let i = 0; i < offset; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'day-cell empty';
+            grid.appendChild(empty);
+        }
 
         for (let d = 1; d <= lastDay.getDate(); d++) {
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const dayPoints = pointsMap.get(dateStr) || 0;
             const isToday = (dateStr === todayStr) ? 'today' : '';
             const isOver = ((monthTotal + dayPoints) > LIMIT && dayPoints > 0) ? 'over-limit' : '';
-            
+
             const cell = document.createElement('div');
             cell.className = `day-cell ${isToday} ${isOver}`;
-            cell.innerHTML = `<span class="day-number">${d}</span><span class="day-points ${dayPoints===0?'zero':''}">${dayPoints>0 ? dayPoints+' б.' : '—'}</span>`;
-            
+            cell.style.setProperty('--i', isYearView ? 0 : d);
+            cell.innerHTML = `
+                <span class="day-number">${d}</span>
+                <span class="day-points ${dayPoints === 0 ? 'zero' : ''}">${dayPoints > 0 ? dayPoints : '·'}</span>
+            `;
+
             cell.addEventListener('click', () => {
                 selectedDay = { year, month, day: d };
-                const mNames = ['Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'];
+                const mNames = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
                 document.getElementById('modalDate').textContent = `${d} ${mNames[month]} ${year}`;
-                
                 const input = document.getElementById('modalPointsInput');
-                input.value = dayPoints > 0 ? dayPoints : ''; // Подставляем текущие баллы
+                input.value = dayPoints > 0 ? dayPoints : '';
                 document.getElementById('modalOverlay').classList.add('active');
-                setTimeout(() => input.focus(), 100);
+                setTimeout(() => input.focus(), 150);
             });
             grid.appendChild(cell);
         }
+
         block.appendChild(grid);
         return block;
     }
 
     function renderAll() {
-        let total = 0, remaining = 0, daysCount = 0, limitVal = LIMIT, percent = 0;
         const container = document.getElementById('calendarContainer');
         container.innerHTML = '';
 
+        let total = 0, remaining = 0, daysCount = 0, limitVal = LIMIT, percent = 0;
+
         if (calendarView === 'month') {
-            // Статистика за МЕСЯЦ
             total = getMonthPoints(currentYear, currentMonth);
             remaining = Math.max(0, LIMIT - total);
-            for (const [key, val] of pointsMap) { if (key.startsWith(`${currentYear}-${String(currentMonth+1).padStart(2,'0')}`) && val > 0) daysCount++; }
+            const prefix = `${currentYear}-${String(currentMonth+1).padStart(2,'0')}`;
+            for (const [key, val] of pointsMap) if (key.startsWith(prefix) && val > 0) daysCount++;
             percent = Math.min(100, (total / LIMIT) * 100);
 
             document.getElementById('statLabelMonthYear').textContent = 'За месяц';
-            document.getElementById('statLabelRemaining').textContent = 'Остаток на месяц';
-            document.getElementById('limitDisplay').textContent = '40 000';
+            document.getElementById('statLabelRemaining').textContent = 'Остаток';
+            document.getElementById('progressRightLabel').textContent = '40 000';
             document.getElementById('topLimitDisplay').textContent = '40 000 / месяц';
-            
+
             const mNamesFull = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
             document.getElementById('monthYear').textContent = `${mNamesFull[currentMonth]} ${currentYear}`;
-            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-expand-arrows-alt" style="margin-right: 6px;"></i> Год';
-            
+            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-expand"></i> Год';
+
             container.className = 'view-month';
             container.appendChild(createMonthBlock(currentYear, currentMonth, false));
-
         } else {
-            // Статистика за ГОД
-            limitVal = LIMIT * 12; // 480 000
-            for(let m = 0; m < 12; m++) total += getMonthPoints(currentYear, m);
+            limitVal = LIMIT * 12;
+            for (let m = 0; m < 12; m++) total += getMonthPoints(currentYear, m);
             remaining = Math.max(0, limitVal - total);
-            for (const [key, val] of pointsMap) { if (key.startsWith(`${currentYear}-`) && val > 0) daysCount++; }
+            for (const [key, val] of pointsMap) if (key.startsWith(`${currentYear}-`) && val > 0) daysCount++;
             percent = Math.min(100, (total / limitVal) * 100);
 
             document.getElementById('statLabelMonthYear').textContent = 'За год';
-            document.getElementById('statLabelRemaining').textContent = 'Остаток на год';
-            document.getElementById('limitDisplay').textContent = '480 000';
+            document.getElementById('statLabelRemaining').textContent = 'Остаток';
+            document.getElementById('progressRightLabel').textContent = '480 000';
             document.getElementById('topLimitDisplay').textContent = '480 000 / год';
-            
-            document.getElementById('monthYear').textContent = `${currentYear} год`;
-            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-compress-arrows-alt" style="margin-right: 6px;"></i> Месяц';
-            
+
+            document.getElementById('monthYear').textContent = `${currentYear}`;
+            document.getElementById('toggleViewBtn').innerHTML = '<i class="fas fa-compress"></i> Месяц';
+
             container.className = 'view-year';
-            for (let m = 0; m < 12; m++) {
-                container.appendChild(createMonthBlock(currentYear, m, true));
-            }
+            for (let m = 0; m < 12; m++) container.appendChild(createMonthBlock(currentYear, m, true, m));
         }
 
-        // Обновление UI цифр
-        document.getElementById('totalAllTime').textContent = ALL_TIME_POINTS.toLocaleString();
-        document.getElementById('totalMonthPoints').textContent = total.toLocaleString();
-        document.getElementById('remainingPoints').textContent = remaining.toLocaleString();
-        document.getElementById('daysWithPoints').textContent = daysCount;
+        animateNumber('totalAllTime', ALL_TIME_POINTS);
+        animateNumber('totalMonthPoints', total);
+        animateNumber('remainingPoints', remaining);
+        animateNumber('daysWithPoints', daysCount);
+
         document.getElementById('progressFill').style.width = percent + '%';
-        document.getElementById('progressPercent').textContent = Math.round(percent) + '%';
+        animateNumber('progressPercent', Math.round(percent), '%');
     }
 
-    // Переключение режимов (Месяц / Год)
+    function animateNumber(id, target, suffix = '') {
+        const el = document.getElementById(id);
+        const start = parseInt(el.textContent.replace(/\D/g, '')) || 0;
+        if (start === target) { el.textContent = target.toLocaleString() + suffix; return; }
+        const duration = 500;
+        const startTime = performance.now();
+        function step(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const val = Math.round(start + (target - start) * eased);
+            el.textContent = val.toLocaleString() + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+
+    function transitionRender(callback) {
+        const container = document.getElementById('calendarContainer');
+        container.classList.add('fade-out');
+        setTimeout(() => {
+            callback();
+            container.classList.remove('fade-out');
+        }, 180);
+    }
+
     document.getElementById('toggleViewBtn').addEventListener('click', () => {
-        calendarView = calendarView === 'month' ? 'year' : 'month';
-        renderAll();
+        transitionRender(() => {
+            calendarView = calendarView === 'month' ? 'year' : 'month';
+            renderAll();
+        });
     });
 
-    // Навигация (Стрелочки)
     document.getElementById('prevMonth').addEventListener('click', () => {
-        if (calendarView === 'month') {
-            if (currentMonth === 0) { currentMonth = 11; currentYear--; } else currentMonth--;
-        } else { currentYear--; }
-        renderAll();
+        transitionRender(() => {
+            if (calendarView === 'month') {
+                if (currentMonth === 0) { currentMonth = 11; currentYear--; }
+                else currentMonth--;
+            } else currentYear--;
+            renderAll();
+        });
     });
-    
+
     document.getElementById('nextMonth').addEventListener('click', () => {
-        if (calendarView === 'month') {
-            if (currentMonth === 11) { currentMonth = 0; currentYear++; } else currentMonth++;
-        } else { currentYear++; }
-        renderAll();
+        transitionRender(() => {
+            if (calendarView === 'month') {
+                if (currentMonth === 11) { currentMonth = 0; currentYear++; }
+                else currentMonth++;
+            } else currentYear++;
+            renderAll();
+        });
     });
-    
-    // Модальное окно (Тапы по дням)
+
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = document.getElementById('modalPointsInput');
+            const current = parseInt(input.value, 10) || 0;
+            input.value = current + parseInt(btn.dataset.val, 10);
+            input.focus();
+        });
+    });
+
     document.getElementById('modalConfirm').addEventListener('click', () => {
         if (!selectedDay) return;
-        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
-        if(val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, false);
+        const val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
+        if (val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, false);
         document.getElementById('modalOverlay').classList.remove('active');
     });
 
     document.getElementById('modalRemove').addEventListener('click', () => {
         if (!selectedDay) return;
-        let val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
-        if(val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, true);
+        const val = parseInt(document.getElementById('modalPointsInput').value, 10) || 0;
+        if (val > 0) modifyPointsDay(selectedDay.year, selectedDay.month, selectedDay.day, val, true);
         document.getElementById('modalOverlay').classList.remove('active');
     });
 
     document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('active'));
-    
-    // Закрытие модального окна по клику вне его
+
     document.getElementById('modalOverlay').addEventListener('click', function(e) {
-        if(e.target === this) this.classList.remove('active');
+        if (e.target === this) this.classList.remove('active');
     });
 
+    document.getElementById('modalPointsInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('modalConfirm').click();
+        if (e.key === 'Escape') document.getElementById('modalCancel').click();
+    });
 </script>
 </body>
 </html>
